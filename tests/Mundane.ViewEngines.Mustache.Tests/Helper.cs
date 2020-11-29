@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -6,21 +6,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
-using Moq;
 
 namespace Mundane.ViewEngines.Mustache.Tests
 {
 	[ExcludeFromCodeCoverage]
 	internal static class Helper
 	{
-		internal static readonly Views Views = new Views(
-			new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Templates"));
+		internal static async Task<string> Execute(MustacheViews views, Func<ResponseStream, Task> bodyWriter)
+		{
+			return await Helper.Execute(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter);
+		}
 
-		private static readonly IFileProvider ResultsFileProvider = new ManifestEmbeddedFileProvider(
-			typeof(Helper).Assembly,
-			"/Results");
-
-		internal static async Task<string> Execute(Views views, Func<ResponseStream, Task> bodyWriter)
+		internal static async Task<string> Execute(
+			DependencyFinder dependencyFinder,
+			Func<ResponseStream, Task> bodyWriter)
 		{
 			var response = await MundaneEngine.ExecuteRequest(
 				MundaneEndpoint.Create(() => Response.Ok(bodyWriter)),
@@ -34,7 +33,7 @@ namespace Mundane.ViewEngines.Mustache.Tests
 					new Dictionary<string, string>(0),
 					new Dictionary<string, string>(0),
 					new Dictionary<string, FileUpload>(0),
-					new Dependencies(new Dependency<Views>(views)),
+					dependencyFinder,
 					new RequestHost(string.Empty, string.Empty, string.Empty),
 					CancellationToken.None));
 
@@ -46,18 +45,11 @@ namespace Mundane.ViewEngines.Mustache.Tests
 			}
 		}
 
-		internal static Views NotFound(string templatePath)
-		{
-			var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);
-
-			fileProvider.Setup(x => x.GetFileInfo(templatePath)).Returns(new NotFoundFileInfo(templatePath));
-
-			return new Views(fileProvider.Object);
-		}
-
 		internal static async Task<string> Results(string templatePath)
 		{
-			await using (var file = Helper.ResultsFileProvider.GetFileInfo(templatePath).CreateReadStream())
+			var fileProvider = new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Results");
+
+			await using (var file = fileProvider.GetFileInfo(templatePath).CreateReadStream())
 			{
 				using (var reader = new StreamReader(file, Encoding.UTF8))
 				{

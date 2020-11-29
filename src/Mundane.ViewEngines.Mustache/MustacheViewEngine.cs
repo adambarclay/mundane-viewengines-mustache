@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
 
 namespace Mundane.ViewEngines.Mustache
 {
@@ -37,15 +36,16 @@ namespace Mundane.ViewEngines.Mustache
 				throw new ArgumentNullException(nameof(viewModel));
 			}
 
-			var views = responseStream.Request.Dependency<Views>();
+			var mustacheViews = responseStream.Request.Dependency<MustacheViews>();
+
+			if (mustacheViews == null)
+			{
+				throw new DependencyNotFound(typeof(MustacheViews));
+			}
 
 			try
 			{
-				await MustacheViewEngine.RenderToStream(
-					responseStream.Stream,
-					views.ViewFileProvider,
-					templatePath,
-					viewModel);
+				await MustacheViewEngine.RenderToStream(responseStream.Stream, mustacheViews, templatePath, viewModel);
 			}
 			catch (Exception exception)
 			{
@@ -67,13 +67,18 @@ namespace Mundane.ViewEngines.Mustache
 				throw new ArgumentNullException(nameof(templatePath));
 			}
 
-			var views = responseStream.Request.Dependency<Views>();
+			var mustacheViews = responseStream.Request.Dependency<MustacheViews>();
+
+			if (mustacheViews == null)
+			{
+				throw new DependencyNotFound(typeof(MustacheViews));
+			}
 
 			try
 			{
 				await MustacheViewEngine.RenderToStream(
 					responseStream.Stream,
-					views.ViewFileProvider,
+					mustacheViews,
 					templatePath,
 					MustacheViewEngine.NoModel);
 			}
@@ -84,17 +89,19 @@ namespace Mundane.ViewEngines.Mustache
 		}
 
 		/// <summary>Renders the view to a string.</summary>
-		/// <param name="views">The view template collection.</param>
+		/// <param name="mustacheViews">The view template collection.</param>
 		/// <param name="templatePath">The path to the view template file.</param>
 		/// <returns>A representation of the view as a string.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="views"/> or <paramref name="templatePath"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/> or <paramref name="templatePath"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
 		[return: NotNull]
-		public static async Task<string> MustacheView([DisallowNull] Views views, [DisallowNull] string templatePath)
+		public static async Task<string> MustacheView(
+			[DisallowNull] MustacheViews mustacheViews,
+			[DisallowNull] string templatePath)
 		{
-			if (views == null)
+			if (mustacheViews == null)
 			{
-				throw new ArgumentNullException(nameof(views));
+				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
 			if (templatePath == null)
@@ -106,16 +113,10 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await using (var stream = new MemoryStream())
-				{
-					await MustacheViewEngine.RenderToStream(
-						stream,
-						views.ViewFileProvider,
-						templatePath,
-						MustacheViewEngine.NoModel);
-
-					result = Encoding.UTF8.GetString(stream.ToArray());
-				}
+				result = await MustacheViewEngine.RenderToString(
+					mustacheViews,
+					templatePath,
+					MustacheViewEngine.NoModel);
 			}
 			catch (Exception exception)
 			{
@@ -127,22 +128,22 @@ namespace Mundane.ViewEngines.Mustache
 
 		/// <summary>Renders the view to a string.</summary>
 		/// <typeparam name="T">The type of the view model.</typeparam>
-		/// <param name="views">The view template collection.</param>
+		/// <param name="mustacheViews">The view template collection.</param>
 		/// <param name="templatePath">The path to the view template file.</param>
 		/// <param name="viewModel">The view model.</param>
 		/// <returns>A representation of the view as a string.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="views"/>, <paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/>, <paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
 		[return: NotNull]
 		public static async Task<string> MustacheView<T>(
-			[DisallowNull] Views views,
+			[DisallowNull] MustacheViews mustacheViews,
 			[DisallowNull] string templatePath,
 			[DisallowNull] T viewModel)
 			where T : notnull
 		{
-			if (views == null)
+			if (mustacheViews == null)
 			{
-				throw new ArgumentNullException(nameof(views));
+				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
 			if (templatePath == null)
@@ -159,12 +160,7 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await using (var stream = new MemoryStream())
-				{
-					await MustacheViewEngine.RenderToStream(stream, views.ViewFileProvider, templatePath, viewModel);
-
-					result = Encoding.UTF8.GetString(stream.ToArray());
-				}
+				result = await MustacheViewEngine.RenderToString(mustacheViews, templatePath, viewModel);
 			}
 			catch (Exception exception)
 			{
@@ -176,20 +172,26 @@ namespace Mundane.ViewEngines.Mustache
 
 		private static async Task RenderToStream<T>(
 			Stream outputStream,
-			IFileProvider fileProvider,
+			MustacheViews mustacheViews,
 			string templatePath,
 			T viewModel)
 		{
-			var fileInfo = fileProvider.GetFileInfo(templatePath);
-
-			if (!fileInfo.Exists)
+			await using (var streamWriter = new StreamWriter(outputStream))
 			{
-				throw new TemplateNotFound(fileInfo.Name);
+				await mustacheViews.Execute(streamWriter, templatePath, viewModel);
 			}
+		}
 
-			await using (var templateStream = fileInfo.CreateReadStream())
+		private static async Task<string> RenderToString<T>(
+			MustacheViews mustacheViews,
+			string templatePath,
+			T viewModel)
+		{
+			await using (var memoryStream = new MemoryStream())
 			{
-				await templateStream.CopyToAsync(outputStream);
+				await MustacheViewEngine.RenderToStream(memoryStream, mustacheViews, templatePath, viewModel);
+
+				return Encoding.UTF8.GetString(memoryStream.ToArray());
 			}
 		}
 	}

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mundane.ViewEngines.Mustache", "src\Mundane.ViewEngines.Mustache\Mundane.ViewEngines.Mustache.csproj", "{D85D07AB-C898-4859-BA1C-460F061D136B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mundane.ViewEngines.Mustache.Tests", "tests\Mundane.ViewEngines.Mustache.Tests\Mundane.ViewEngines.Mustache.Tests.csproj", "{079EF5E2-B302-425C-97E2-71F0F67C72DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mundane.ViewEngines.Mustache.Tests", "tests\Mundane.ViewEngines.Mustache.Tests\Mundane.ViewEngines.Mustache.Tests.csproj", "{079EF5E2-B302-425C-97E2-71F0F67C72DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

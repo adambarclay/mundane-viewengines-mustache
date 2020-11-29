@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
@@ -13,7 +14,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 			const string template = "Index.html";
 			const string expected = "Template \"" + template + "\" was not found.";
 
-			var views = Helper.NotFound(template);
+			var views = new MustacheViews(new NullFileProvider());
 
 			var exceptionStreamNoViewModel = await Assert.ThrowsAnyAsync<TemplateNotFound>(
 				async () => await Helper.Execute(views, o => o.MustacheView(template)));
