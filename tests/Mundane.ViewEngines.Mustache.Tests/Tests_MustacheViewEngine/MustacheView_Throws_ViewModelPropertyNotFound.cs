@@ -60,5 +60,19 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 
 			Assert.Equal("Property \"Title\" was not found.", exception.Message);
 		}
+
+		[Theory]
+		[ClassData(typeof(MustacheViewNoModelTheoryData))]
+		public static async Task When_The_View_Template_Contains_A_Property_And_The_View_Model_Is_Not_Supplied(
+			MustacheViewNoModel entryPoint)
+		{
+			var views = new MustacheViews(
+				new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Templates/SimpleSubstitutions/Single"));
+
+			var exception = await Assert.ThrowsAnyAsync<ViewModelPropertyNotFound>(
+				async () => await entryPoint(views, "Single.html"));
+
+			Assert.Equal("Property \"Title\" was not found.", exception.Message);
+		}
 	}
 }

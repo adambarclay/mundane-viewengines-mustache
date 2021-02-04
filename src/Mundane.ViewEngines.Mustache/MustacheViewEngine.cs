@@ -17,6 +17,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="ArgumentNullException"><paramref name="templatePath"/> is <see langword="null"/>.</exception>
 		/// <exception cref="DependencyNotFound">The <see cref="MustacheViews"/> dependency has not been registered.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask MustacheView(this ResponseStream responseStream, string templatePath)
 		{
 			if (templatePath == null)
@@ -34,6 +35,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to the response stream using the <see cref="MustacheViews"/> request dependency.</summary>
@@ -45,6 +50,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="ArgumentNullException"><paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
 		/// <exception cref="DependencyNotFound">The <see cref="MustacheViews"/> dependency has not been registered.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name which is not present in the view model.</exception>
 		public static async ValueTask MustacheView<T>(
 			this ResponseStream responseStream,
 			string templatePath,
@@ -71,6 +77,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to the response stream.</summary>
@@ -78,9 +88,9 @@ namespace Mundane.ViewEngines.Mustache
 		/// <param name="mustacheViews">The view template collection.</param>
 		/// <param name="templatePath">The path to the view template file.</param>
 		/// <returns>A task that represents the asynchronous operation.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="templatePath"/> is <see langword="null"/>.</exception>
-		/// <exception cref="DependencyNotFound">The <see cref="MustacheViews"/> dependency has not been registered.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/>, <paramref name="templatePath"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask MustacheView(
 			this ResponseStream responseStream,
 			MustacheViews mustacheViews,
@@ -104,6 +114,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to the response stream.</summary>
@@ -113,9 +127,9 @@ namespace Mundane.ViewEngines.Mustache
 		/// <param name="templatePath">The path to the view template file.</param>
 		/// <param name="viewModel">The view model.</param>
 		/// <returns>A task that represents the asynchronous operation.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
-		/// <exception cref="DependencyNotFound">The <see cref="MustacheViews"/> dependency has not been registered.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/>, <paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name which is not present in the view model.</exception>
 		public static async ValueTask MustacheView<T>(
 			this ResponseStream responseStream,
 			MustacheViews mustacheViews,
@@ -146,6 +160,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to a stream.</summary>
@@ -155,6 +173,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <returns>A task that represents the asynchronous operation.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="outputStream"/>, <paramref name="mustacheViews"/> or <paramref name="templatePath"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask MustacheView(
 			Stream outputStream,
 			MustacheViews mustacheViews,
@@ -183,6 +202,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to a stream.</summary>
@@ -194,6 +217,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <returns>A task that represents the asynchronous operation.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="outputStream"/>, <paramref name="mustacheViews"/>, <paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name which is not present in the view model.</exception>
 		public static async ValueTask MustacheView<T>(
 			Stream outputStream,
 			MustacheViews mustacheViews,
@@ -229,6 +253,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 		}
 
 		/// <summary>Renders the view to a string.</summary>
@@ -237,6 +265,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <returns>A representation of the view as a string.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/> or <paramref name="templatePath"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask<string> MustacheView(MustacheViews mustacheViews, string templatePath)
 		{
 			if (mustacheViews == null)
@@ -262,6 +291,10 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw exception;
 			}
+			catch (ViewModelPropertyNotFound exception)
+			{
+				throw exception;
+			}
 
 			return result;
 		}
@@ -274,6 +307,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <returns>A representation of the view as a string.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="mustacheViews"/>, <paramref name="templatePath"/> or <paramref name="viewModel"/> is <see langword="null"/>.</exception>
 		/// <exception cref="TemplateNotFound">The view template specified by <paramref name="templatePath"/>, or a view template referenced by it, was not found.</exception>
+		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name which is not present in the view model.</exception>
 		public static async ValueTask<string> MustacheView<T>(
 			MustacheViews mustacheViews,
 			string templatePath,
@@ -302,6 +336,10 @@ namespace Mundane.ViewEngines.Mustache
 				result = await MustacheViewEngine.RenderToString(mustacheViews, templatePath, viewModel);
 			}
 			catch (TemplateNotFound exception)
+			{
+				throw exception;
+			}
+			catch (ViewModelPropertyNotFound exception)
 			{
 				throw exception;
 			}
