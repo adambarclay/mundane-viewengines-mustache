@@ -5,129 +5,37 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Mundane.ViewEngines.Mustache.Compilation
 {
-	internal static class LexicalAnalyser
+	internal sealed class LexicalAnalyser
 	{
-		private static readonly LexerState BraceClose = (tokens, literals, stringBuilder, character) =>
+		private static readonly LexerState Text = LexicalAnalyser.TextState;
+		private static readonly LexerState BraceClose = LexicalAnalyser.BraceCloseState;
+		private static readonly LexerState IdentifierStart = LexicalAnalyser.IdentifierStartState;
+		private static readonly LexerState Identifier = LexicalAnalyser.IdentifierState;
+		private static readonly LexerState IdentifierEnd = LexicalAnalyser.IdentifierEndState;
+		private static readonly LexerState BraceOpen = LexicalAnalyser.BraceOpenState;
+
+		private readonly List<string> literals;
+		private readonly StringBuilder stringBuilder;
+		private readonly List<Token> tokens;
+		private int currentColumn;
+		private int currentLine;
+
+		private LexicalAnalyser()
 		{
-			if (character == '}')
-			{
-				if (stringBuilder.Length > 0)
-				{
-					literals.Add(stringBuilder.ToString());
-					stringBuilder.Clear();
-				}
+			this.tokens = new List<Token>();
+			this.literals = new List<string>();
+			this.stringBuilder = new StringBuilder(1024);
+			this.currentLine = 0;
+			this.currentColumn = 0;
+		}
 
-				tokens.Add(Token.CloseTag);
-
-				return LexicalAnalyser.Text;
-			}
-
-			if (stringBuilder.Length == 0)
-			{
-				tokens.Add(Token.Identifier);
-			}
-
-			stringBuilder.Append('}');
-			stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		};
-
-		private static readonly LexerState BraceOpen = (tokens, literals, stringBuilder, character) =>
-		{
-			if (character == '{')
-			{
-				if (stringBuilder.Length > 0)
-				{
-					literals.Add(stringBuilder.ToString());
-					stringBuilder.Clear();
-				}
-
-				tokens.Add(Token.OpenTag);
-
-				return LexicalAnalyser.Identifier;
-			}
-
-			if (stringBuilder.Length == 0)
-			{
-				tokens.Add(Token.Text);
-			}
-
-			stringBuilder.Append('{');
-			stringBuilder.Append(character);
-
-			return LexicalAnalyser.Text;
-		};
-
-		private static readonly LexerState Identifier = (tokens, literals, stringBuilder, character) =>
-		{
-			if (char.IsWhiteSpace(character))
-			{
-				if (stringBuilder.Length > 0)
-				{
-					literals.Add(stringBuilder.ToString());
-					stringBuilder.Clear();
-				}
-
-				return LexicalAnalyser.IdentifierEnd;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		};
-
-		private static readonly LexerState IdentifierEnd = (tokens, literals, stringBuilder, character) =>
-		{
-			if (char.IsWhiteSpace(character))
-			{
-				return LexicalAnalyser.IdentifierEnd;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			tokens.Add(Token.Identifier);
-			stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		};
-
-		private static readonly LexerState Text = (tokens, literals, stringBuilder, character) =>
-		{
-			if (character == '{')
-			{
-				return LexicalAnalyser.BraceOpen;
-			}
-
-			if (stringBuilder.Length == 0)
-			{
-				tokens.Add(Token.Text);
-			}
-
-			stringBuilder.Append(character);
-
-			return LexicalAnalyser.Text;
-		};
-
-		private delegate LexerState LexerState(
-			List<Token> tokens,
-			List<string> literals,
-			StringBuilder stringBuilder,
-			char character);
+		private delegate LexerState LexerState(LexicalAnalyser state, char character);
 
 		internal static (List<Token> Tokens, List<string> Literals) Tokenise(IFileInfo templateFile)
 		{
 			string template;
 
-			using (var resourceStream = templateFile.CreateReadStream())
+			using (var resourceStream = templateFile.CreateReadStream()!)
 			{
 				using (var streamReader = new StreamReader(resourceStream, Encoding.UTF8))
 				{
@@ -135,28 +43,171 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				}
 			}
 
-			var tokens = new List<Token>();
-			var literals = new List<string>();
+			var state = new LexicalAnalyser();
 
-			var offset = 0;
-
-			var stringBuilder = new StringBuilder(1024);
+			var characterOffset = 0;
+			var lastCharacter = '\0';
 
 			var lexerState = LexicalAnalyser.Text;
 
-			while (offset < template.Length)
+			while (characterOffset < template.Length)
 			{
-				lexerState = lexerState.Invoke(tokens, literals, stringBuilder, template[offset++]);
+				var character = template[characterOffset++];
+
+				lexerState = lexerState.Invoke(state, character);
+
+				if (character == '\r')
+				{
+					++state.currentLine;
+					state.currentColumn = 0;
+				}
+				else if (character == '\n')
+				{
+					if (lastCharacter != '\r')
+					{
+						++state.currentLine;
+						state.currentColumn = 0;
+					}
+				}
+				else
+				{
+					++state.currentColumn;
+				}
+
+				lastCharacter = character;
 			}
 
-			if (stringBuilder.Length > 0)
+			if (state.stringBuilder.Length > 0)
 			{
-				literals.Add(stringBuilder.ToString());
+				state.literals.Add(state.stringBuilder.ToString());
 			}
 
-			tokens.Add(Token.End);
+			state.tokens.Add(new Token(TokenType.End, state.currentLine, state.currentColumn));
 
-			return (tokens, literals);
+			return (state.tokens, state.literals);
+		}
+
+		private static LexerState BraceCloseState(LexicalAnalyser state, char character)
+		{
+			if (character == '}')
+			{
+				if (state.stringBuilder.Length > 0)
+				{
+					state.literals.Add(state.stringBuilder.ToString());
+					state.stringBuilder.Clear();
+				}
+
+				state.tokens.Add(new Token(TokenType.CloseTag, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.Text;
+			}
+
+			state.stringBuilder.Append('}');
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState BraceOpenState(LexicalAnalyser state, char character)
+		{
+			if (character == '{')
+			{
+				if (state.stringBuilder.Length > 0)
+				{
+					state.literals.Add(state.stringBuilder.ToString());
+					state.stringBuilder.Clear();
+				}
+
+				state.tokens.Add(new Token(TokenType.OpenTag, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (state.stringBuilder.Length == 0)
+			{
+				state.tokens.Add(new Token(TokenType.Text, state.currentLine, state.currentColumn));
+			}
+
+			state.stringBuilder.Append('{');
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Text;
+		}
+
+		private static LexerState IdentifierEndState(LexicalAnalyser state, char character)
+		{
+			if (char.IsWhiteSpace(character))
+			{
+				return LexicalAnalyser.IdentifierEnd;
+			}
+
+			if (character == '}')
+			{
+				return LexicalAnalyser.BraceClose;
+			}
+
+			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState IdentifierStartState(LexicalAnalyser state, char character)
+		{
+			if (char.IsWhiteSpace(character))
+			{
+				return LexicalAnalyser.IdentifierStartState;
+			}
+
+			if (character == '}')
+			{
+				return LexicalAnalyser.BraceClose;
+			}
+
+			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState IdentifierState(LexicalAnalyser state, char character)
+		{
+			if (char.IsWhiteSpace(character))
+			{
+				if (state.stringBuilder.Length > 0)
+				{
+					state.literals.Add(state.stringBuilder.ToString());
+					state.stringBuilder.Clear();
+				}
+
+				return LexicalAnalyser.IdentifierEnd;
+			}
+
+			if (character == '}')
+			{
+				return LexicalAnalyser.BraceClose;
+			}
+
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState TextState(LexicalAnalyser state, char character)
+		{
+			if (character == '{')
+			{
+				return LexicalAnalyser.BraceOpen;
+			}
+
+			if (state.stringBuilder.Length == 0)
+			{
+				state.tokens.Add(new Token(TokenType.Text, state.currentLine, state.currentColumn));
+			}
+
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Text;
 		}
 	}
 }

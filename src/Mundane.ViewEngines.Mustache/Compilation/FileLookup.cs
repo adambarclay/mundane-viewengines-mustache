@@ -10,11 +10,11 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 		{
 			var files = new List<(string, IFileInfo)>();
 
-			foreach (var content in fileProvider.GetDirectoryContents("/"))
+			foreach (var content in fileProvider.GetDirectoryContents("/")!)
 			{
 				if (content.IsDirectory)
 				{
-					FileLookup.GetFiles(fileProvider, content.Name, files);
+					FileLookup.GetFiles(fileProvider, content.Name!, files);
 				}
 				else
 				{
@@ -27,15 +27,15 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 		private static void GetFiles(IFileProvider fileProvider, string path, List<(string Path, IFileInfo File)> files)
 		{
-			foreach (var content in fileProvider.GetDirectoryContents(path))
+			foreach (var content in fileProvider.GetDirectoryContents(path)!)
 			{
 				if (content.IsDirectory)
 				{
-					FileLookup.GetFiles(fileProvider, Path.Combine(path, content.Name), files);
+					FileLookup.GetFiles(fileProvider, Path.Combine(path, content.Name!), files);
 				}
 				else
 				{
-					files.Add((Path.Combine(path, content.Name).Replace('\\', '/'), content));
+					files.Add((Path.Combine(path, content.Name!).Replace('\\', '/'), content));
 				}
 			}
 		}

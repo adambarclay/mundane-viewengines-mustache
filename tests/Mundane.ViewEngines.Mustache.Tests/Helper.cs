@@ -12,17 +12,38 @@ namespace Mundane.ViewEngines.Mustache.Tests
 	[ExcludeFromCodeCoverage]
 	internal static class Helper
 	{
-		internal static async Task<string> Execute(MustacheViews views, Func<ResponseStream, Task> bodyWriter)
+		internal static async ValueTask<string> Results(string templatePath)
 		{
-			return await Helper.Execute(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter);
+			var fileProvider = new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Results");
+
+			await using (var file = fileProvider.GetFileInfo(templatePath)!.CreateReadStream()!)
+			{
+				using (var reader = new StreamReader(file, Encoding.UTF8))
+				{
+					return await reader.ReadToEndAsync();
+				}
+			}
 		}
 
-		internal static async Task<string> Execute(
-			DependencyFinder dependencyFinder,
-			Func<ResponseStream, Task> bodyWriter)
+		internal static async ValueTask<string> Run(Func<Stream, ValueTask> func)
+		{
+			await using (var stream = new MemoryStream())
+			{
+				await func(stream);
+
+				return Encoding.UTF8.GetString(stream.ToArray());
+			}
+		}
+
+		internal static ValueTask<string> Run(MustacheViews views, BodyWriter bodyWriter)
+		{
+			return Helper.Run(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter);
+		}
+
+		internal static async ValueTask<string> Run(DependencyFinder dependencyFinder, BodyWriter bodyWriter)
 		{
 			var response = await MundaneEngine.ExecuteRequest(
-				MundaneEndpoint.Create(() => Response.Ok(bodyWriter)),
+				MundaneEndpointFactory.Create(() => Response.Ok(bodyWriter)),
 				new Request(
 					string.Empty,
 					string.Empty,
@@ -42,19 +63,6 @@ namespace Mundane.ViewEngines.Mustache.Tests
 				await response.WriteBodyToStream(stream);
 
 				return Encoding.UTF8.GetString(stream.ToArray());
-			}
-		}
-
-		internal static async Task<string> Results(string templatePath)
-		{
-			var fileProvider = new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Results");
-
-			await using (var file = fileProvider.GetFileInfo(templatePath).CreateReadStream())
-			{
-				using (var reader = new StreamReader(file, Encoding.UTF8))
-				{
-					return await reader.ReadToEndAsync();
-				}
 			}
 		}
 	}

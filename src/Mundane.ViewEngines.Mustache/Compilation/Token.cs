@@ -1,12 +1,18 @@
 namespace Mundane.ViewEngines.Mustache.Compilation
 {
-	internal enum Token
+	internal sealed class Token
 	{
-		Text,
-		OpenTag,
-		CloseTag,
-		Identifier,
-		End,
-		Program
+		internal Token(TokenType tokenType, int line, int character)
+		{
+			this.TokenType = tokenType;
+			this.Line = line;
+			this.Character = character;
+		}
+
+		internal int Character { get; }
+
+		internal int Line { get; }
+
+		internal TokenType TokenType { get; }
 	}
 }

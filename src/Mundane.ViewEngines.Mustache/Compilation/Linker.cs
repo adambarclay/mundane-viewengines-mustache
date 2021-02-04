@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
 using Mundane.ViewEngines.Mustache.Engine;
 
 namespace Mundane.ViewEngines.Mustache.Compilation
@@ -7,8 +8,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 	internal static class Linker
 	{
 		internal static (ViewProgram ViewProgram, ReadOnlyDictionary<string, int> EntryPoints) Link(
-			List<(string Path, (List<Instruction> Instructions, List<string> Literals, List<string[]> Identifiers)
-				Program)> programs)
+			List<(string Path, CompiledProgram Program)> programs)
 		{
 			var entryPoints = new Dictionary<string, int>(programs.Count);
 
@@ -16,30 +16,30 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var literalCount = 0;
 			var identifierCount = 0;
 
-			foreach ((var path, (var instructions, var literals, var identifiers)) in programs)
+			foreach ((var path, var compiledProgram) in programs)
 			{
 				entryPoints.Add(path, instructionCount);
 
-				instructionCount += instructions.Count;
-				literalCount += literals.Count;
-				identifierCount += identifiers.Count;
+				instructionCount += compiledProgram.Instructions.Count;
+				literalCount += compiledProgram.Literals.Count;
+				identifierCount += compiledProgram.Identifiers.Count;
 			}
 
 			var programInstructions = new Instruction[instructionCount];
-			var programLiterals = new string[literalCount];
+			var programLiterals = new byte[literalCount][];
 			var programIdentifiers = new string[identifierCount][];
 
 			var instructionOffset = 0;
 			var literalOffset = 0;
 			var identifierOffset = 0;
 
-			foreach ((var _, (var instructions, var literals, var identifiers)) in programs)
+			foreach ((var _, var compiledProgram) in programs)
 			{
-				instructions.CopyTo(programInstructions, instructionOffset);
+				compiledProgram.Instructions.CopyTo(programInstructions, instructionOffset);
 
-				for (var i = 0; i < instructions.Count; ++i)
+				for (var i = 0; i < compiledProgram.Instructions.Count; ++i)
 				{
-					var instruction = instructions[i];
+					var instruction = compiledProgram.Instructions[i];
 
 					if (instruction.InstructionType == InstructionType.Literal)
 					{
@@ -55,16 +55,20 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 					}
 					else
 					{
-						programInstructions[instructionOffset + i] = instructions[i];
+						programInstructions[instructionOffset + i] = compiledProgram.Instructions[i];
 					}
 				}
 
-				literals.CopyTo(programLiterals, literalOffset);
-				identifiers.CopyTo(programIdentifiers, identifierOffset);
+				for (var i = 0; i < compiledProgram.Literals.Count; ++i)
+				{
+					programLiterals[literalOffset + i] = Encoding.UTF8.GetBytes(compiledProgram.Literals[i]);
+				}
 
-				instructionOffset += instructions.Count;
-				literalOffset += literals.Count;
-				identifierOffset += identifiers.Count;
+				compiledProgram.Identifiers.CopyTo(programIdentifiers, identifierOffset);
+
+				instructionOffset += compiledProgram.Instructions.Count;
+				literalOffset += compiledProgram.Literals.Count;
+				identifierOffset += compiledProgram.Identifiers.Count;
 			}
 
 			return (new ViewProgram(programInstructions, programLiterals, programIdentifiers),

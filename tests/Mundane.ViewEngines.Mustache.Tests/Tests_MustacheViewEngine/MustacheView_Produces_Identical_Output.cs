@@ -8,13 +8,15 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 	[ExcludeFromCodeCoverage]
 	public static class MustacheView_Produces_Identical_Output
 	{
-		[Fact]
-		public static async Task When_The_File_Name_Has_A_Leading_Slash_And_When_It_Hasnt()
+		[Theory]
+		[ClassData(typeof(MustacheViewWithModelTheoryData))]
+		public static async Task When_The_File_Name_Has_A_Leading_Slash_And_When_It_Hasnt(
+			MustacheViewWithModel entryPoint)
 		{
-			var views = new MustacheViews(new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Templates"));
-
-			const string templatePath = "SimpleSubstitutions/SimpleSubstitutions.html";
-			const string templatePathSlash = "/SimpleSubstitutions/SimpleSubstitutions.html";
+			var views = new MustacheViews(
+				new ManifestEmbeddedFileProvider(
+					typeof(Helper).Assembly,
+					"/Templates/SimpleSubstitutions/WhitespaceVariations"));
 
 			var viewModel = new
 			{
@@ -23,12 +25,8 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 			};
 
 			Assert.Equal(
-				await Helper.Execute(views, o => o.MustacheView(templatePath, viewModel)),
-				await Helper.Execute(views, o => o.MustacheView(templatePathSlash, viewModel)));
-
-			Assert.Equal(
-				await MustacheViewEngine.MustacheView(views, templatePath, viewModel),
-				await MustacheViewEngine.MustacheView(views, templatePathSlash, viewModel));
+				await entryPoint(views, "WhitespaceVariations.html", viewModel),
+				await entryPoint(views, "/WhitespaceVariations.html", viewModel));
 		}
 	}
 }

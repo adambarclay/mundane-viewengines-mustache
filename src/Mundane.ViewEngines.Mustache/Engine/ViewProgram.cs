@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Mundane.ViewEngines.Mustache.Engine
@@ -14,16 +15,17 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 		private readonly string[][] identifiers;
 		private readonly Instruction[] instructions;
-		private readonly string[] literals;
+		private readonly byte[][] literals;
 
-		internal ViewProgram(Instruction[] instructions, string[] literals, string[][] identifiers)
+		internal ViewProgram(Instruction[] instructions, byte[][] literals, string[][] identifiers)
 		{
 			this.instructions = instructions;
 			this.literals = literals;
 			this.identifiers = identifiers;
 		}
 
-		internal async Task Execute<T>(StreamWriter streamWriter, int entryPoint, T viewModel)
+		internal async ValueTask Execute<T>(Stream outputStream, int entryPoint, T viewModel)
+			where T : notnull
 		{
 			var programStack = new int[128];
 			var stackCounter = 0;
@@ -38,16 +40,15 @@ namespace Mundane.ViewEngines.Mustache.Engine
 				{
 					case InstructionType.Literal:
 					{
-						await streamWriter.WriteAsync(this.literals[instruction.Parameter]);
+						await outputStream.WriteAsync(this.literals[instruction.Parameter]);
 
 						break;
 					}
 
 					case InstructionType.OutputValue:
 					{
-						await streamWriter.WriteAsync(
-							WebUtility.HtmlEncode(
-								ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter])));
+						await outputStream.WriteAsync(
+							ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter]));
 
 						break;
 					}
@@ -58,21 +59,18 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 						break;
 					}
-
-					default:
-					{
-						throw new InvalidOperationException(
-							$"Instruction \"{instruction.InstructionType}\" not valid.");
-					}
 				}
 			}
 		}
 
-		private static object? GetPropertyValue(object viewModel, string propertyName)
+		private static object? GetPropertyValue(object viewModel, string propertyName, string[] identifiers)
 		{
-			if (viewModel is IDictionary<string, object> dictionaryModel)
+			if (viewModel is IDictionary dictionaryModel)
 			{
-				return dictionaryModel.TryGetValue(propertyName, out var output) ? output : null;
+				if (dictionaryModel.Contains(propertyName))
+				{
+					return dictionaryModel[propertyName];
+				}
 			}
 
 			var type = viewModel.GetType();
@@ -86,27 +84,41 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 			var field = type.GetField(propertyName, ViewProgram.ValueFlags);
 
-			return field?.GetValue(viewModel);
+			if (field != null)
+			{
+				return field.GetValue(viewModel);
+			}
+
+			throw new ViewModelPropertyNotFound(identifiers);
 		}
 
-		private static string GetValue(object? viewModel, string[] identifiers)
+		private static byte[] GetValue(object viewModel, string[] identifiers)
 		{
-			if (viewModel == null)
-			{
-				return string.Empty;
-			}
+			var valueObject = viewModel;
 
 			foreach (var identifier in identifiers)
 			{
-				viewModel = ViewProgram.GetPropertyValue(viewModel, identifier);
-
-				if (viewModel == null)
+				if (valueObject == null)
 				{
-					return string.Empty;
+					throw new ViewModelPropertyNotFound(identifiers);
 				}
+
+				valueObject = ViewProgram.GetPropertyValue(valueObject, identifier, identifiers);
 			}
 
-			return viewModel.ToString() ?? string.Empty;
+			if (valueObject == null)
+			{
+				return Array.Empty<byte>();
+			}
+
+			var value = valueObject.ToString();
+
+			if (value == null)
+			{
+				return Array.Empty<byte>();
+			}
+
+			return Encoding.UTF8.GetBytes(WebUtility.HtmlEncode(value));
 		}
 	}
 }

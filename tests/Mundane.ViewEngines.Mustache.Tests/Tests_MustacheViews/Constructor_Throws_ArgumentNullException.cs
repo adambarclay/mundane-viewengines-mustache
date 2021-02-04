@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
-namespace Mundane.ViewEngines.Mustache.Tests.Tests_Views
+namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 {
 	[ExcludeFromCodeCoverage]
 	public static class Constructor_Throws_ArgumentNullException
@@ -12,7 +12,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_Views
 		{
 			var exception = Assert.ThrowsAny<ArgumentNullException>(() => new MustacheViews(null!));
 
-			Assert.Same("viewFileProvider", exception.ParamName);
+			Assert.Same("viewFileProvider", exception.ParamName!);
 		}
 	}
 }

@@ -4,23 +4,43 @@
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 	</PropertyGroup>
 	<ItemGroup>
-		<EmbeddedResource Include="Results\NoSubstitutions.html"/>
-		<EmbeddedResource Include="Results\SimpleSubstitutions\SimpleSubstitutions.html"/>
-		<EmbeddedResource Include="Templates\NoSubstitutions.html"/>
-		<EmbeddedResource Include="Templates\SimpleSubstitutions\SimpleSubstitutions.html"/>
+		<None Remove="Errors\LineNumberReporting\Linux.html"/>
+		<None Remove="Errors\LineNumberReporting\Mac.html"/>
+		<None Remove="Errors\LineNumberReporting\Windows.html"/>
+		<None Remove="Errors\MissingCloseBrace.html"/>
+		<None Remove="Errors\MissingIdentifier.html"/>
+		<None Remove="Errors\MissingIdentifier\MissingIdentifier - Copy.html"/>
+		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
+		<None Remove="Results\SimpleSubstitutions\SingleNoOutput.html"/>
+		<None Remove="Templates\SimpleSubstitutions\BraceCloseInIdentifier.html"/>
+		<None Remove="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
+		<None Remove="Templates\SimpleSubstitutions\Single\Single.html"/>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="1.3.0">
+		<EmbeddedResource Include="Errors\LineNumberReporting\Mac\Mac.dat"/>
+		<EmbeddedResource Include="Errors\LineNumberReporting\Linux\Linux.dat"/>
+		<EmbeddedResource Include="Errors\LineNumberReporting\Windows\Windows.dat"/>
+		<EmbeddedResource Include="Errors\TooManyIdentifiers\TooManyIdentifiers.html"/>
+		<EmbeddedResource Include="Errors\MissingIdentifier\MissingIdentifier.html"/>
+		<EmbeddedResource Include="Results\NoSubstitutions\NoSubstitutions.html"/>
+		<EmbeddedResource Include="Results\SimpleSubstitutions\BraceOpenInText.html"/>
+		<EmbeddedResource Include="Results\SimpleSubstitutions\SingleNoOutput.html"/>
+		<EmbeddedResource Include="Results\SimpleSubstitutions\SimpleSubstitutions.html"/>
+		<EmbeddedResource Include="Errors\MissingCloseBrace\MissingCloseBrace.html"/>
+		<EmbeddedResource Include="Templates\NoSubstitutions\NoSubstitutions.html"/>
+		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
+		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceCloseInIdentifier\BraceCloseInIdentifier.html"/>
+		<EmbeddedResource Include="Templates\SimpleSubstitutions\Single\Single.html"/>
+		<EmbeddedResource Include="Templates\SimpleSubstitutions\WhitespaceVariations\WhitespaceVariations.html"/>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="3.0.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.0"/>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0"/>
-		<PackageReference Include="Moq" Version="4.15.2"/>
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.2"/>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3"/>
+		<PackageReference Include="Moq" Version="4.16.0"/>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -33,7 +53,6 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference
-			Include="..\..\src\Mundane.ViewEngines.Mustache\Mundane.ViewEngines.Mustache.csproj"/>
+		<ProjectReference Include="..\..\src\Mundane.ViewEngines.Mustache\Mundane.ViewEngines.Mustache.csproj"/>
 	</ItemGroup>
 </Project>

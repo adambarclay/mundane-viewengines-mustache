@@ -18,6 +18,8 @@ namespace Mundane.ViewEngines.Mustache
 
 		/// <summary>Initializes a new instance of the <see cref="MustacheViews"/> class.</summary>
 		/// <param name="viewFileProvider">The view template file provider.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="viewFileProvider"/> is <see langword="null"/>.</exception>
+		/// <exception cref="MustacheCompilerError">An error is discovered during view compilation.</exception>
 		public MustacheViews(IFileProvider viewFileProvider)
 		{
 			if (viewFileProvider == null)
@@ -33,24 +35,23 @@ namespace Mundane.ViewEngines.Mustache
 
 				(this.viewProgram, this.entryPoints) = Linker.Link(programs);
 			}
-			catch (Exception e)
+			catch (MustacheCompilerError exception)
 			{
-				Console.WriteLine(e);
-
-				throw;
+				throw exception;
 			}
 		}
 
-		internal async Task Execute<T>(StreamWriter streamWriter, string templatePath, T viewModel)
+		internal async Task Execute<T>(Stream outputStream, string templatePath, T viewModel)
+			where T : notnull
 		{
-			var canonicalTemplatePath = MustacheViews.ResolvePath(templatePath);
-
-			if (!this.entryPoints.ContainsKey(canonicalTemplatePath))
+			if (this.entryPoints.TryGetValue(MustacheViews.ResolvePath(templatePath), out var entryPoint))
+			{
+				await this.viewProgram.Execute(outputStream, entryPoint, viewModel);
+			}
+			else
 			{
 				throw new TemplateNotFound(templatePath);
 			}
-
-			await this.viewProgram.Execute(streamWriter, this.entryPoints[canonicalTemplatePath], viewModel);
 		}
 
 		private static string ResolvePath(string path)
@@ -59,7 +60,7 @@ namespace Mundane.ViewEngines.Mustache
 
 			while (path.StartsWith('/'))
 			{
-				path = path.Substring(1, path.Length - 1);
+				path = path[1..]!;
 			}
 
 			return Path.GetFullPath(path)
