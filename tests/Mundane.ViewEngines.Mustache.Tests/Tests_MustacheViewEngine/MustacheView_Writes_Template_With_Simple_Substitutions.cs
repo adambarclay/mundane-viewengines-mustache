@@ -9,15 +9,14 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 	[ExcludeFromCodeCoverage]
 	public static class MustacheView_Writes_Template_With_Simple_Substitutions
 	{
-		[Fact]
-		public static async Task When_The_Identifier_Contains_A_Single_Close_Brace()
+		[Theory]
+		[ClassData(typeof(MustacheViewWithModelTheoryData))]
+		public static async Task When_The_Identifier_Contains_A_Single_Close_Brace(MustacheViewWithModel entryPoint)
 		{
 			var views = new MustacheViews(
 				new ManifestEmbeddedFileProvider(
 					typeof(Helper).Assembly,
 					"/Templates/SimpleSubstitutions/BraceCloseInIdentifier"));
-
-			const string templatePath = "BraceCloseInIdentifier.html";
 
 			var viewModel = new Dictionary<string, object>
 			{
@@ -25,69 +24,49 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 				{ "Nes}ed", new { Value = "Nested Value" } }
 			};
 
-			var results = await Helper.Results("SimpleSubstitutions/SimpleSubstitutions.html");
-
-			Assert.Equal(results, await Helper.Run(views, o => o.MustacheView(templatePath, viewModel)));
-
 			Assert.Equal(
-				results,
-				await Helper.Run(stream => MustacheViewEngine.MustacheView(stream, views, templatePath, viewModel)));
-
-			Assert.Equal(results, await MustacheViewEngine.MustacheView(views, templatePath, viewModel));
+				await Helper.Results("SimpleSubstitutions/SimpleSubstitutions.html"),
+				await entryPoint(views, "BraceCloseInIdentifier.html", viewModel));
 		}
 
-		[Fact]
-		public static async Task When_The_Tags_Have_Different_Amounts_Of_Whitespace()
+		[Theory]
+		[ClassData(typeof(MustacheViewWithModelTheoryData))]
+		public static async Task When_The_Tags_Have_Different_Amounts_Of_Whitespace(MustacheViewWithModel entryPoint)
 		{
 			var views = new MustacheViews(
 				new ManifestEmbeddedFileProvider(
 					typeof(Helper).Assembly,
 					"/Templates/SimpleSubstitutions/WhitespaceVariations"));
 
-			const string templatePath = "WhitespaceVariations.html";
-
 			var viewModel = new
 			{
 				Title = "Simple Substitutions",
 				Nested = new { Value = "Nested Value" }
 			};
 
-			var results = await Helper.Results("SimpleSubstitutions/SimpleSubstitutions.html");
-
-			Assert.Equal(results, await Helper.Run(views, o => o.MustacheView(templatePath, viewModel)));
-
 			Assert.Equal(
-				results,
-				await Helper.Run(stream => MustacheViewEngine.MustacheView(stream, views, templatePath, viewModel)));
-
-			Assert.Equal(results, await MustacheViewEngine.MustacheView(views, templatePath, viewModel));
+				await Helper.Results("SimpleSubstitutions/SimpleSubstitutions.html"),
+				await entryPoint(views, "WhitespaceVariations.html", viewModel));
 		}
 
-		[Fact]
-		public static async Task When_The_Text_Contains_A_Single_Open_Brace()
+		[Theory]
+		[ClassData(typeof(MustacheViewWithModelTheoryData))]
+		public static async Task When_The_Text_Contains_A_Single_Open_Brace(MustacheViewWithModel entryPoint)
 		{
 			var views = new MustacheViews(
 				new ManifestEmbeddedFileProvider(
 					typeof(Helper).Assembly,
 					"/Templates/SimpleSubstitutions/BraceOpenInText"));
 
-			const string templatePath = "BraceOpenInText.html";
-
 			var viewModel = new
 			{
 				Title = "Simple Substitutions",
 				Nested = new { Value = "Nested Value" }
 			};
 
-			var results = await Helper.Results("SimpleSubstitutions/BraceOpenInText.html");
-
-			Assert.Equal(results, await Helper.Run(views, o => o.MustacheView(templatePath, viewModel)));
-
 			Assert.Equal(
-				results,
-				await Helper.Run(stream => MustacheViewEngine.MustacheView(stream, views, templatePath, viewModel)));
-
-			Assert.Equal(results, await MustacheViewEngine.MustacheView(views, templatePath, viewModel));
+				await Helper.Results("SimpleSubstitutions/BraceOpenInText.html"),
+				await entryPoint(views, "BraceOpenInText.html", viewModel));
 		}
 
 		[Theory]

@@ -4,29 +4,48 @@
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 	</PropertyGroup>
 	<ItemGroup>
+		<None Remove="Errors\BlockIdentifiers\BlockIdentifiers.html"/>
+		<None Remove="Errors\BlockIdentifiers\Inverted.html"/>
+		<None Remove="Errors\BlockIdentifiers\Nested.html"/>
 		<None Remove="Errors\LineNumberReporting\Linux.html"/>
 		<None Remove="Errors\LineNumberReporting\Mac.html"/>
 		<None Remove="Errors\LineNumberReporting\Windows.html"/>
 		<None Remove="Errors\MissingCloseBrace.html"/>
 		<None Remove="Errors\MissingIdentifier.html"/>
 		<None Remove="Errors\MissingIdentifier\MissingIdentifier - Copy.html"/>
+		<None Remove="Errors\MissingOpeningBlock\MissingOpeningBlock.html"/>
+		<None Remove="Results\Block\WhitespaceVariations.html"/>
 		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<None Remove="Results\SimpleSubstitutions\SingleNoOutput.html"/>
+		<None Remove="Templates\Block\Simple\Inverted.html"/>
+		<None Remove="Templates\Block\Simple\NoBlock.html"/>
+		<None Remove="Templates\Block\Single.html"/>
+		<None Remove="Templates\Block\WhitespaceVariations\WhitespaceVariations.html"/>
 		<None Remove="Templates\SimpleSubstitutions\BraceCloseInIdentifier.html"/>
 		<None Remove="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
 		<None Remove="Templates\SimpleSubstitutions\Single\Single.html"/>
 	</ItemGroup>
 	<ItemGroup>
+		<EmbeddedResource Include="Errors\MissingOpeningBlock\MissingOpeningBlock.html"/>
+		<EmbeddedResource Include="Errors\NestedBlockIdentifiers\NestedBlockIdentifiers.html"/>
+		<EmbeddedResource Include="Errors\BlockIdentifiers\BlockIdentifiers.html"/>
+		<EmbeddedResource Include="Errors\InvertedBlockIdentifiers\InvertedBlockIdentifiers.html"/>
 		<EmbeddedResource Include="Errors\LineNumberReporting\Mac\Mac.dat"/>
 		<EmbeddedResource Include="Errors\LineNumberReporting\Linux\Linux.dat"/>
 		<EmbeddedResource Include="Errors\LineNumberReporting\Windows\Windows.dat"/>
 		<EmbeddedResource Include="Errors\TooManyIdentifiers\TooManyIdentifiers.html"/>
 		<EmbeddedResource Include="Errors\MissingIdentifier\MissingIdentifier.html"/>
+		<EmbeddedResource Include="Results\Block\Simple.html"/>
+		<EmbeddedResource Include="Results\Block\WhitespaceVariations.html"/>
 		<EmbeddedResource Include="Results\NoSubstitutions\NoSubstitutions.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\SingleNoOutput.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\SimpleSubstitutions.html"/>
 		<EmbeddedResource Include="Errors\MissingCloseBrace\MissingCloseBrace.html"/>
+		<EmbeddedResource Include="Results\Block\NoBlock.html"/>
+		<EmbeddedResource Include="Templates\Block\Inverted\Inverted.html"/>
+		<EmbeddedResource Include="Templates\Block\Simple\Simple.html"/>
+		<EmbeddedResource Include="Templates\Block\WhitespaceVariations\WhitespaceVariations.html"/>
 		<EmbeddedResource Include="Templates\NoSubstitutions\NoSubstitutions.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceCloseInIdentifier\BraceCloseInIdentifier.html"/>

@@ -7,13 +7,6 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 {
 	internal sealed class LexicalAnalyser
 	{
-		private static readonly LexerState Text = LexicalAnalyser.TextState;
-		private static readonly LexerState BraceClose = LexicalAnalyser.BraceCloseState;
-		private static readonly LexerState IdentifierStart = LexicalAnalyser.IdentifierStartState;
-		private static readonly LexerState Identifier = LexicalAnalyser.IdentifierState;
-		private static readonly LexerState IdentifierEnd = LexicalAnalyser.IdentifierEndState;
-		private static readonly LexerState BraceOpen = LexicalAnalyser.BraceOpenState;
-
 		private readonly List<string> literals;
 		private readonly StringBuilder stringBuilder;
 		private readonly List<Token> tokens;
@@ -48,7 +41,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var characterOffset = 0;
 			var lastCharacter = '\0';
 
-			var lexerState = LexicalAnalyser.Text;
+			LexerState lexerState = LexicalAnalyser.Text;
 
 			while (characterOffset < template.Length)
 			{
@@ -87,7 +80,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			return (state.tokens, state.literals);
 		}
 
-		private static LexerState BraceCloseState(LexicalAnalyser state, char character)
+		private static LexerState BraceClose(LexicalAnalyser state, char character)
 		{
 			if (character == '}')
 			{
@@ -108,7 +101,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			return LexicalAnalyser.Identifier;
 		}
 
-		private static LexerState BraceOpenState(LexicalAnalyser state, char character)
+		private static LexerState BraceOpen(LexicalAnalyser state, char character)
 		{
 			if (character == '{')
 			{
@@ -118,9 +111,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 					state.stringBuilder.Clear();
 				}
 
-				state.tokens.Add(new Token(TokenType.OpenTag, state.currentLine, state.currentColumn));
-
-				return LexicalAnalyser.IdentifierStart;
+				return LexicalAnalyser.DoubleBraceOpen;
 			}
 
 			if (state.stringBuilder.Length == 0)
@@ -134,43 +125,40 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			return LexicalAnalyser.Text;
 		}
 
-		private static LexerState IdentifierEndState(LexicalAnalyser state, char character)
+		private static LexerState DoubleBraceOpen(LexicalAnalyser state, char character)
 		{
 			if (char.IsWhiteSpace(character))
 			{
-				return LexicalAnalyser.IdentifierEnd;
+				return LexicalAnalyser.DoubleBraceOpen;
 			}
 
-			if (character == '}')
+			if (character == '#')
 			{
-				return LexicalAnalyser.BraceClose;
+				state.tokens.Add(new Token(TokenType.OpenBlock, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
 			}
 
-			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
-			state.stringBuilder.Append(character);
+			if (character == '/')
+			{
+				state.tokens.Add(new Token(TokenType.CloseBlock, state.currentLine, state.currentColumn));
 
-			return LexicalAnalyser.Identifier;
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (character == '^')
+			{
+				state.tokens.Add(new Token(TokenType.InvertedBlock, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			state.tokens.Add(new Token(TokenType.OpenTag, state.currentLine, state.currentColumn));
+
+			return LexicalAnalyser.IdentifierStart(state, character);
 		}
 
-		private static LexerState IdentifierStartState(LexicalAnalyser state, char character)
-		{
-			if (char.IsWhiteSpace(character))
-			{
-				return LexicalAnalyser.IdentifierStartState;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
-			state.stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		}
-
-		private static LexerState IdentifierState(LexicalAnalyser state, char character)
+		private static LexerState Identifier(LexicalAnalyser state, char character)
 		{
 			if (char.IsWhiteSpace(character))
 			{
@@ -193,7 +181,43 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			return LexicalAnalyser.Identifier;
 		}
 
-		private static LexerState TextState(LexicalAnalyser state, char character)
+		private static LexerState IdentifierEnd(LexicalAnalyser state, char character)
+		{
+			if (char.IsWhiteSpace(character))
+			{
+				return LexicalAnalyser.IdentifierEnd;
+			}
+
+			if (character == '}')
+			{
+				return LexicalAnalyser.BraceClose;
+			}
+
+			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState IdentifierStart(LexicalAnalyser state, char character)
+		{
+			if (char.IsWhiteSpace(character))
+			{
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (character == '}')
+			{
+				return LexicalAnalyser.BraceClose;
+			}
+
+			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.stringBuilder.Append(character);
+
+			return LexicalAnalyser.Identifier;
+		}
+
+		private static LexerState Text(LexicalAnalyser state, char character)
 		{
 			if (character == '{')
 			{

@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace Mundane.ViewEngines.Mustache.Compilation
 {
+	[DebuggerDisplay("{" + nameof(Token.TokenType) + "}")]
 	internal sealed class Token
 	{
 		internal Token(TokenType tokenType, int line, int character)

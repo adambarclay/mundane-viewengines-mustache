@@ -11,29 +11,70 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var literals = new List<string>();
 			var identifiers = new List<string[]>();
 
+			var blockStack = new Stack<int>();
+
 			var scannedLiteralOffset = 0;
 
-			var literalOffset = 0;
-			var identifierOffset = 0;
-
-			foreach (var token in tokens)
+			for (var tokenOffset = 0; tokenOffset < tokens.Count; tokenOffset++)
 			{
-				switch (token.TokenType)
+				switch (tokens[tokenOffset].TokenType)
 				{
+					case TokenType.OpenBlock:
+					{
+						instructions.Add(new Instruction(InstructionType.Truthiness, identifiers.Count));
+
+						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+
+						blockStack.Push(instructions.Count);
+
+						instructions.Add(new Instruction(InstructionType.BranchIfFalse, 0));
+
+						++tokenOffset;
+
+						break;
+					}
+
+					case TokenType.InvertedBlock:
+					{
+						instructions.Add(new Instruction(InstructionType.Falsiness, identifiers.Count));
+
+						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+
+						blockStack.Push(instructions.Count);
+
+						instructions.Add(new Instruction(InstructionType.BranchIfFalse, 0));
+
+						++tokenOffset;
+
+						break;
+					}
+
+					case TokenType.CloseBlock:
+					{
+						instructions[blockStack.Pop()] = new Instruction(
+							InstructionType.BranchIfFalse,
+							instructions.Count);
+
+						++scannedLiteralOffset;
+						++tokenOffset;
+
+						break;
+					}
+
 					case TokenType.Text:
 					{
-						literals.Add(scannedliterals[scannedLiteralOffset++]);
+						instructions.Add(new Instruction(InstructionType.Literal, literals.Count));
 
-						instructions.Add(new Instruction(InstructionType.Literal, literalOffset++));
+						literals.Add(scannedliterals[scannedLiteralOffset++]);
 
 						break;
 					}
 
 					case TokenType.Identifier:
 					{
-						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+						instructions.Add(new Instruction(InstructionType.OutputValue, identifiers.Count));
 
-						instructions.Add(new Instruction(InstructionType.OutputValue, identifierOffset++));
+						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
 
 						break;
 					}

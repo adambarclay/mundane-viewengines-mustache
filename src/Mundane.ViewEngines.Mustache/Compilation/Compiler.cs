@@ -16,7 +16,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			{
 				(var tokens, var literals) = LexicalAnalyser.Tokenise(file);
 
-				(var invalid, var error) = Parser.Parse(path, tokens);
+				(var invalid, var error) = Parser.Parse(path, tokens, literals);
 
 				if (invalid)
 				{

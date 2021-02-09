@@ -30,6 +30,8 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			var programStack = new int[128];
 			var stackCounter = 0;
 
+			var truthyRegister = false;
+
 			programStack[stackCounter] = entryPoint;
 
 			while (stackCounter >= 0)
@@ -48,7 +50,33 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					case InstructionType.OutputValue:
 					{
 						await outputStream.WriteAsync(
+							ViewProgram.GetValueBytes(viewModel, this.identifiers[instruction.Parameter]));
+
+						break;
+					}
+
+					case InstructionType.Truthiness:
+					{
+						truthyRegister = ViewProgram.Truthy(
 							ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter]));
+
+						break;
+					}
+
+					case InstructionType.Falsiness:
+					{
+						truthyRegister = !ViewProgram.Truthy(
+							ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter]));
+
+						break;
+					}
+
+					case InstructionType.BranchIfFalse:
+					{
+						if (!truthyRegister)
+						{
+							programStack[stackCounter] = instruction.Parameter;
+						}
 
 						break;
 					}
@@ -63,36 +91,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			}
 		}
 
-		private static object? GetPropertyValue(object viewModel, string propertyName, string[] identifiers)
-		{
-			if (viewModel is IDictionary dictionaryModel)
-			{
-				if (dictionaryModel.Contains(propertyName))
-				{
-					return dictionaryModel[propertyName];
-				}
-			}
-
-			var type = viewModel.GetType();
-
-			var property = type.GetProperty(propertyName, ViewProgram.ValueFlags);
-
-			if (property != null)
-			{
-				return property.GetValue(viewModel, null);
-			}
-
-			var field = type.GetField(propertyName, ViewProgram.ValueFlags);
-
-			if (field != null)
-			{
-				return field.GetValue(viewModel);
-			}
-
-			throw new ViewModelPropertyNotFound(identifiers);
-		}
-
-		private static byte[] GetValue(object viewModel, string[] identifiers)
+		private static object? GetValue(object viewModel, string[] identifiers)
 		{
 			var valueObject = viewModel;
 
@@ -103,8 +102,49 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					throw new ViewModelPropertyNotFound(identifiers);
 				}
 
-				valueObject = ViewProgram.GetPropertyValue(valueObject, identifier, identifiers);
+				if (valueObject is IDictionary dictionaryModel)
+				{
+					if (dictionaryModel.Contains(identifier))
+					{
+						valueObject = dictionaryModel[identifier];
+					}
+					else
+					{
+						throw new ViewModelPropertyNotFound(identifiers);
+					}
+				}
+				else
+				{
+					var type = valueObject.GetType();
+
+					var property = type.GetProperty(identifier, ViewProgram.ValueFlags);
+
+					if (property != null)
+					{
+						valueObject = property.GetValue(valueObject, null);
+					}
+					else
+					{
+						var field = type.GetField(identifier, ViewProgram.ValueFlags);
+
+						if (field != null)
+						{
+							valueObject = field.GetValue(valueObject);
+						}
+						else
+						{
+							throw new ViewModelPropertyNotFound(identifiers);
+						}
+					}
+				}
 			}
+
+			return valueObject;
+		}
+
+		private static byte[] GetValueBytes(object viewModel, string[] identifiers)
+		{
+			var valueObject = ViewProgram.GetValue(viewModel, identifiers);
 
 			if (valueObject == null)
 			{
@@ -119,6 +159,81 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			}
 
 			return Encoding.UTF8.GetBytes(WebUtility.HtmlEncode(value));
+		}
+
+		private static bool Truthy(object? value)
+		{
+			if (value is null)
+			{
+				return false;
+			}
+
+			if (value is bool boolValue)
+			{
+				return boolValue;
+			}
+
+			if (value is string { Length: 0 })
+			{
+				return false;
+			}
+
+			if (value is sbyte sbyteValue && sbyteValue == 0)
+			{
+				return false;
+			}
+
+			if (value is byte byteValue && byteValue == 0)
+			{
+				return false;
+			}
+
+			if (value is short shortValue && shortValue == 0)
+			{
+				return false;
+			}
+
+			if (value is ushort ushortValue && ushortValue == 0)
+			{
+				return false;
+			}
+
+			if (value is int intValue && intValue == 0)
+			{
+				return false;
+			}
+
+			if (value is uint uintValue && uintValue == 0)
+			{
+				return false;
+			}
+
+			if (value is long longValue && longValue == 0)
+			{
+				return false;
+			}
+
+			if (value is ulong ulongValue && ulongValue == 0)
+			{
+				return false;
+			}
+
+			if (value is float floatValue && floatValue == 0)
+			{
+				return false;
+			}
+
+			if (value is double doubleValue && doubleValue == 0)
+			{
+				return false;
+			}
+
+			if (value is decimal decimalValue && decimalValue == 0)
+			{
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

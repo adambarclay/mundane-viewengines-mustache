@@ -5,9 +5,12 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 	internal static class Parser
 	{
 		/*
-			1. P ::= ''
-			2. P ::= {{ id }} P
-			3. P ::= <text> P
+			1. P ::= ε
+			2. P ::= text P
+			3. P ::= {{ id }} P
+			4. P ::= {{# B
+			5. P ::= {{^ B
+			6. B ::= id }} P {{/ id }} P
 		*/
 		private static readonly Dictionary<TokenType, Dictionary<TokenType, int>> ParsingTable =
 			new Dictionary<TokenType, Dictionary<TokenType, int>>
@@ -15,54 +18,127 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				{
 					TokenType.Program, new Dictionary<TokenType, int>
 					{
-						{ TokenType.End, 1 },
-						{ TokenType.OpenTag, 2 },
-						{ TokenType.Text, 3 }
+						{ TokenType.Epsilon, 1 },
+						{ TokenType.Text, 2 },
+						{ TokenType.OpenTag, 3 },
+						{ TokenType.OpenBlock, 4 },
+						{ TokenType.InvertedBlock, 5 }
 					}
-				}
+				},
+				{ TokenType.Block, new Dictionary<TokenType, int> { { TokenType.Identifier, 6 } } }
 			};
 
-		internal static (bool Invalid, ParserError Error) Parse(string filePath, List<Token> tokens)
+		internal static (bool Invalid, ParserError Error) Parse(
+			string filePath,
+			List<Token> tokens,
+			List<string> literals)
 		{
-			var stack = new Stack<TokenType>();
+			var blockStack = new Stack<string>();
+			var literalOffset = 0;
 
-			stack.Push(TokenType.End);
-			stack.Push(TokenType.Program);
+			var tokenStack = new Stack<TokenType>();
+
+			tokenStack.Push(TokenType.End);
+			tokenStack.Push(TokenType.Program);
 
 			var tokenOffset = 0;
 
-			while (stack.Count > 0)
+			while (tokenStack.Count > 0)
 			{
-				if (stack.Peek() == tokens[tokenOffset].TokenType)
+				var nextToken = tokenStack.Peek();
+
+				if (nextToken == tokens[tokenOffset].TokenType)
 				{
-					stack.Pop();
+					var token = tokenStack.Pop();
+
+					if (token == TokenType.Text)
+					{
+						++literalOffset;
+					}
+					else if (token == TokenType.Identifier)
+					{
+						var previousToken = tokens[tokenOffset - 1].TokenType;
+
+						if (previousToken == TokenType.OpenBlock || previousToken == TokenType.InvertedBlock)
+						{
+							blockStack.Push(literals[literalOffset]);
+						}
+						else if (previousToken == TokenType.CloseBlock)
+						{
+							var expectedIdentifier = blockStack.Pop();
+
+							if (expectedIdentifier != literals[literalOffset])
+							{
+								var message = "Block closing tag {{/" +
+									literals[literalOffset] +
+									"}} does not correspond to opening tag {{" +
+									expectedIdentifier +
+									"}}.";
+
+								return (true, new ParserError(filePath, tokens[tokenOffset], message));
+							}
+						}
+
+						++literalOffset;
+					}
 
 					++tokenOffset;
 				}
-				else if (Parser.ParsingTable.TryGetValue(stack.Peek(), out var ruleTable) &&
-					ruleTable.TryGetValue(tokens[tokenOffset].TokenType, out var rule))
+				else if (Parser.ParsingTable.TryGetValue(nextToken, out var ruleTable) &&
+					(ruleTable.TryGetValue(tokens[tokenOffset].TokenType, out var rule) ||
+						ruleTable.TryGetValue(TokenType.Epsilon, out rule)))
 				{
 					switch (rule)
 					{
 						case 1:
 						{
-							stack.Pop();
+							tokenStack.Pop();
 
 							break;
 						}
 
 						case 2:
 						{
-							stack.Push(TokenType.CloseTag);
-							stack.Push(TokenType.Identifier);
-							stack.Push(TokenType.OpenTag);
+							tokenStack.Push(TokenType.Text);
 
 							break;
 						}
 
 						case 3:
 						{
-							stack.Push(TokenType.Text);
+							tokenStack.Push(TokenType.CloseTag);
+							tokenStack.Push(TokenType.Identifier);
+							tokenStack.Push(TokenType.OpenTag);
+
+							break;
+						}
+
+						case 4:
+						{
+							tokenStack.Push(TokenType.Block);
+							tokenStack.Push(TokenType.OpenBlock);
+
+							break;
+						}
+
+						case 5:
+						{
+							tokenStack.Push(TokenType.Block);
+							tokenStack.Push(TokenType.InvertedBlock);
+
+							break;
+						}
+
+						case 6:
+						{
+							tokenStack.Pop();
+
+							tokenStack.Push(TokenType.CloseTag);
+							tokenStack.Push(TokenType.Identifier);
+							tokenStack.Push(TokenType.CloseBlock);
+							tokenStack.Push(TokenType.Program);
+							tokenStack.Push(TokenType.CloseTag);
+							tokenStack.Push(TokenType.Identifier);
 
 							break;
 						}
@@ -70,7 +146,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				}
 				else
 				{
-					return (true, new ParserError(filePath, stack.Peek(), tokens[tokenOffset]));
+					return (true, new ParserError(filePath, tokens[tokenOffset], nextToken));
 				}
 			}
 

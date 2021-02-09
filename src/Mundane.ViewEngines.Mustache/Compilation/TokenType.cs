@@ -2,11 +2,16 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 {
 	internal enum TokenType
 	{
-		Text,
-		OpenTag,
+		Block,
+		CloseBlock,
 		CloseTag,
-		Identifier,
 		End,
-		Program
+		Epsilon,
+		Identifier,
+		InvertedBlock,
+		OpenBlock,
+		OpenTag,
+		Program,
+		Text
 	}
 }

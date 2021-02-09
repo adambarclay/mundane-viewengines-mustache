@@ -47,11 +47,19 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							instruction.InstructionType,
 							instruction.Parameter + literalOffset);
 					}
-					else if (instruction.InstructionType == InstructionType.OutputValue)
+					else if (instruction.InstructionType == InstructionType.OutputValue ||
+						instruction.InstructionType == InstructionType.Truthiness ||
+						instruction.InstructionType == InstructionType.Falsiness)
 					{
 						programInstructions[instructionOffset + i] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + identifierOffset);
+					}
+					else if (instruction.InstructionType == InstructionType.BranchIfFalse)
+					{
+						programInstructions[instructionOffset + i] = new Instruction(
+							instruction.InstructionType,
+							instruction.Parameter + instructionOffset);
 					}
 					else
 					{
