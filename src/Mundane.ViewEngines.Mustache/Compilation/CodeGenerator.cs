@@ -11,7 +11,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var literals = new List<string>();
 			var identifiers = new List<string[]>();
 
-			var blockStack = new Stack<int>();
+			var blockStack = new Stack<(TokenType, int)>();
 
 			var scannedLiteralOffset = 0;
 
@@ -21,13 +21,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				{
 					case TokenType.OpenBlock:
 					{
-						instructions.Add(new Instruction(InstructionType.Truthiness, identifiers.Count));
+						instructions.Add(new Instruction(InstructionType.PushValue, identifiers.Count));
 
 						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
 
-						blockStack.Push(instructions.Count);
+						blockStack.Push((TokenType.OpenBlock, instructions.Count));
 
-						instructions.Add(new Instruction(InstructionType.BranchIfFalse, 0));
+						instructions.Add(new Instruction(InstructionType.BranchIfFalsy, 0));
 
 						++tokenOffset;
 
@@ -36,13 +36,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 					case TokenType.InvertedBlock:
 					{
-						instructions.Add(new Instruction(InstructionType.Falsiness, identifiers.Count));
+						instructions.Add(new Instruction(InstructionType.PushValue, identifiers.Count));
 
 						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
 
-						blockStack.Push(instructions.Count);
+						blockStack.Push((TokenType.InvertedBlock, instructions.Count));
 
-						instructions.Add(new Instruction(InstructionType.BranchIfFalse, 0));
+						instructions.Add(new Instruction(InstructionType.BranchIfTruthy, 0));
 
 						++tokenOffset;
 
@@ -51,8 +51,15 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 					case TokenType.CloseBlock:
 					{
-						instructions[blockStack.Pop()] = new Instruction(
-							InstructionType.BranchIfFalse,
+						(var blockType, var loopStart) = blockStack.Pop();
+
+						if (blockType == TokenType.OpenBlock)
+						{
+							instructions.Add(new Instruction(InstructionType.Loop, loopStart + 1));
+						}
+
+						instructions[loopStart] = new Instruction(
+							instructions[loopStart].InstructionType,
 							instructions.Count);
 
 						++scannedLiteralOffset;

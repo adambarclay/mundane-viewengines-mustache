@@ -48,14 +48,15 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							instruction.Parameter + literalOffset);
 					}
 					else if (instruction.InstructionType == InstructionType.OutputValue ||
-						instruction.InstructionType == InstructionType.Truthiness ||
-						instruction.InstructionType == InstructionType.Falsiness)
+						instruction.InstructionType == InstructionType.PushValue)
 					{
 						programInstructions[instructionOffset + i] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + identifierOffset);
 					}
-					else if (instruction.InstructionType == InstructionType.BranchIfFalse)
+					else if (instruction.InstructionType == InstructionType.BranchIfFalsy ||
+						instruction.InstructionType == InstructionType.BranchIfTruthy ||
+						instruction.InstructionType == InstructionType.Loop)
 					{
 						programInstructions[instructionOffset + i] = new Instruction(
 							instruction.InstructionType,

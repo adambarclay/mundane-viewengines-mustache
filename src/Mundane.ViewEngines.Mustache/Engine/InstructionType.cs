@@ -2,11 +2,12 @@ namespace Mundane.ViewEngines.Mustache.Engine
 {
 	internal enum InstructionType
 	{
-		BranchIfFalse,
-		Falsiness,
+		BranchIfFalsy,
+		BranchIfTruthy,
 		Literal,
+		Loop,
 		OutputValue,
-		Return,
-		Truthiness
+		PushValue,
+		Return
 	}
 }

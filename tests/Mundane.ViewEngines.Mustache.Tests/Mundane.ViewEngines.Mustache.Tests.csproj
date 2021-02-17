@@ -14,9 +14,11 @@
 		<None Remove="Errors\MissingIdentifier.html"/>
 		<None Remove="Errors\MissingIdentifier\MissingIdentifier - Copy.html"/>
 		<None Remove="Errors\MissingOpeningBlock\MissingOpeningBlock.html"/>
+		<None Remove="Results\Block\Multi.html"/>
 		<None Remove="Results\Block\WhitespaceVariations.html"/>
 		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<None Remove="Results\SimpleSubstitutions\SingleNoOutput.html"/>
+		<None Remove="Templates\Block\Nested\Nested.html"/>
 		<None Remove="Templates\Block\Simple\Inverted.html"/>
 		<None Remove="Templates\Block\Simple\NoBlock.html"/>
 		<None Remove="Templates\Block\Single.html"/>
@@ -35,6 +37,7 @@
 		<EmbeddedResource Include="Errors\LineNumberReporting\Windows\Windows.dat"/>
 		<EmbeddedResource Include="Errors\TooManyIdentifiers\TooManyIdentifiers.html"/>
 		<EmbeddedResource Include="Errors\MissingIdentifier\MissingIdentifier.html"/>
+		<EmbeddedResource Include="Results\Block\Multi.html"/>
 		<EmbeddedResource Include="Results\Block\Simple.html"/>
 		<EmbeddedResource Include="Results\Block\WhitespaceVariations.html"/>
 		<EmbeddedResource Include="Results\NoSubstitutions\NoSubstitutions.html"/>
@@ -44,6 +47,7 @@
 		<EmbeddedResource Include="Errors\MissingCloseBrace\MissingCloseBrace.html"/>
 		<EmbeddedResource Include="Results\Block\NoBlock.html"/>
 		<EmbeddedResource Include="Templates\Block\Inverted\Inverted.html"/>
+		<EmbeddedResource Include="Templates\Block\Nested\Nested.html"/>
 		<EmbeddedResource Include="Templates\Block\Simple\Simple.html"/>
 		<EmbeddedResource Include="Templates\Block\WhitespaceVariations\WhitespaceVariations.html"/>
 		<EmbeddedResource Include="Templates\NoSubstitutions\NoSubstitutions.html"/>
@@ -57,7 +61,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.2"/>
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.3"/>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3"/>
 		<PackageReference Include="Moq" Version="4.16.0"/>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">

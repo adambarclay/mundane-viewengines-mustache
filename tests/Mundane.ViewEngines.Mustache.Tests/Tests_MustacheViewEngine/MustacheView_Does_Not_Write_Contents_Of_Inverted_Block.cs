@@ -11,6 +11,26 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 	{
 		[Theory]
 		[ClassData(typeof(MustacheViewWithModelTheoryData))]
+		public static async Task When_The_Inverted_Block_Condition_Is_Non_Empty_Enumerable(
+			MustacheViewWithModel entryPoint)
+		{
+			var views = new MustacheViews(
+				new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Templates/Block"));
+
+			var viewModel = new
+			{
+				Title = "Simple Block",
+				BlockCondition = new[] { new object() },
+				Value = "Block Contents"
+			};
+
+			Assert.Equal(
+				await Helper.Results("Block/NoBlock.html"),
+				await entryPoint(views, "Inverted/Inverted.html", viewModel));
+		}
+
+		[Theory]
+		[ClassData(typeof(MustacheViewWithModelTheoryData))]
 		public static async Task When_The_Inverted_Block_Condition_Is_Non_Empty_String(MustacheViewWithModel entryPoint)
 		{
 			var views = new MustacheViews(

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -30,9 +31,12 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			var programStack = new int[128];
 			var stackCounter = 0;
 
-			var truthyRegister = false;
+			var objectStack = new Stack<object?>();
+			var enumeratorStack = new Stack<IEnumerator>();
 
 			programStack[stackCounter] = entryPoint;
+
+			objectStack.Push(viewModel);
 
 			while (stackCounter >= 0)
 			{
@@ -50,32 +54,65 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					case InstructionType.OutputValue:
 					{
 						await outputStream.WriteAsync(
-							ViewProgram.GetValueBytes(viewModel, this.identifiers[instruction.Parameter]));
+							ViewProgram.GetValueBytes(objectStack, this.identifiers[instruction.Parameter]));
 
 						break;
 					}
 
-					case InstructionType.Truthiness:
+					case InstructionType.PushValue:
 					{
-						truthyRegister = ViewProgram.Truthy(
-							ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter]));
+						objectStack.Push(ViewProgram.GetValue(objectStack, this.identifiers[instruction.Parameter]));
 
 						break;
 					}
 
-					case InstructionType.Falsiness:
+					case InstructionType.BranchIfFalsy:
 					{
-						truthyRegister = !ViewProgram.Truthy(
-							ViewProgram.GetValue(viewModel, this.identifiers[instruction.Parameter]));
-
-						break;
-					}
-
-					case InstructionType.BranchIfFalse:
-					{
-						if (!truthyRegister)
+						if (ViewProgram.Falsy(objectStack.Peek(), out var enumerator))
 						{
+							objectStack.Pop();
+
 							programStack[stackCounter] = instruction.Parameter;
+						}
+						else if (enumerator != null)
+						{
+							enumeratorStack.Push(enumerator);
+
+							objectStack.Pop();
+							objectStack.Push(enumerator.Current);
+						}
+
+						break;
+					}
+
+					case InstructionType.BranchIfTruthy:
+					{
+						if (!ViewProgram.Falsy(objectStack.Peek(), out var _))
+						{
+							objectStack.Pop();
+
+							programStack[stackCounter] = instruction.Parameter;
+						}
+
+						break;
+					}
+
+					case InstructionType.Loop:
+					{
+						objectStack.Pop();
+
+						if (enumeratorStack.TryPeek(out var enumerator))
+						{
+							if (enumerator.MoveNext())
+							{
+								objectStack.Push(enumerator.Current);
+
+								programStack[stackCounter] = instruction.Parameter;
+							}
+							else
+							{
+								enumeratorStack.Pop();
+							}
 						}
 
 						break;
@@ -91,15 +128,66 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			}
 		}
 
-		private static object? GetValue(object viewModel, string[] identifiers)
+		private static bool Falsy(object? value, out IEnumerator? enumerator)
 		{
-			var valueObject = viewModel;
+			if (value is null)
+			{
+				enumerator = null;
 
+				return true;
+			}
+
+			if (value is bool boolValue)
+			{
+				enumerator = null;
+
+				return !boolValue;
+			}
+
+			if (value is string stringValue)
+			{
+				enumerator = null;
+
+				return stringValue.Length == 0;
+			}
+
+			if (value is IEnumerable enumerableValue)
+			{
+				enumerator = enumerableValue.GetEnumerator();
+
+				return !enumerator.MoveNext();
+			}
+
+			enumerator = null;
+
+			switch (value)
+			{
+				case sbyte sbyteValue when sbyteValue == 0:
+				case byte byteValue when byteValue == 0:
+				case short shortValue when shortValue == 0:
+				case ushort ushortValue when ushortValue == 0:
+				case int intValue when intValue == 0:
+				case uint uintValue when uintValue == 0:
+				case long longValue when longValue == 0:
+				case ulong ulongValue when ulongValue == 0:
+				case float floatValue when floatValue == 0:
+				case double doubleValue when doubleValue == 0:
+				case decimal decimalValue when decimalValue == 0:
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static (bool ValueFound, object? ValueObject) GetObjectValue(object? valueObject, string[] identifiers)
+		{
 			foreach (var identifier in identifiers)
 			{
 				if (valueObject == null)
 				{
-					throw new ViewModelPropertyNotFound(identifiers);
+					return (false, null);
 				}
 
 				if (valueObject is IDictionary dictionaryModel)
@@ -110,7 +198,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					}
 					else
 					{
-						throw new ViewModelPropertyNotFound(identifiers);
+						return (false, null);
 					}
 				}
 				else
@@ -133,18 +221,33 @@ namespace Mundane.ViewEngines.Mustache.Engine
 						}
 						else
 						{
-							throw new ViewModelPropertyNotFound(identifiers);
+							return (false, null);
 						}
 					}
 				}
 			}
 
-			return valueObject;
+			return (true, valueObject);
 		}
 
-		private static byte[] GetValueBytes(object viewModel, string[] identifiers)
+		private static object? GetValue(Stack<object?> objectStack, string[] identifiers)
 		{
-			var valueObject = ViewProgram.GetValue(viewModel, identifiers);
+			foreach (var topofStack in objectStack)
+			{
+				(var valueFound, var valueObject) = ViewProgram.GetObjectValue(topofStack, identifiers);
+
+				if (valueFound)
+				{
+					return valueObject;
+				}
+			}
+
+			throw new ViewModelPropertyNotFound(identifiers);
+		}
+
+		private static byte[] GetValueBytes(Stack<object?> objectStack, string[] identifiers)
+		{
+			var valueObject = ViewProgram.GetValue(objectStack, identifiers);
 
 			if (valueObject == null)
 			{
@@ -159,81 +262,6 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			}
 
 			return Encoding.UTF8.GetBytes(WebUtility.HtmlEncode(value));
-		}
-
-		private static bool Truthy(object? value)
-		{
-			if (value is null)
-			{
-				return false;
-			}
-
-			if (value is bool boolValue)
-			{
-				return boolValue;
-			}
-
-			if (value is string { Length: 0 })
-			{
-				return false;
-			}
-
-			if (value is sbyte sbyteValue && sbyteValue == 0)
-			{
-				return false;
-			}
-
-			if (value is byte byteValue && byteValue == 0)
-			{
-				return false;
-			}
-
-			if (value is short shortValue && shortValue == 0)
-			{
-				return false;
-			}
-
-			if (value is ushort ushortValue && ushortValue == 0)
-			{
-				return false;
-			}
-
-			if (value is int intValue && intValue == 0)
-			{
-				return false;
-			}
-
-			if (value is uint uintValue && uintValue == 0)
-			{
-				return false;
-			}
-
-			if (value is long longValue && longValue == 0)
-			{
-				return false;
-			}
-
-			if (value is ulong ulongValue && ulongValue == 0)
-			{
-				return false;
-			}
-
-			if (value is float floatValue && floatValue == 0)
-			{
-				return false;
-			}
-
-			if (value is double doubleValue && doubleValue == 0)
-			{
-				return false;
-			}
-
-			if (value is decimal decimalValue && decimalValue == 0)
-			{
-				return false;
-			}
-
-			return true;
 		}
 	}
 }

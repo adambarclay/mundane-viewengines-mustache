@@ -1,0 +1,10 @@
+﻿<!doctype html>
+<html>
+	<head>
+		<title>{{ Title }}</title>
+	</head>
+	<body>{{ #BlockCondition }}
+		<p>{{ Value }}</p>{{ #NestedCondition }}
+		<p>{{ Value }}</p>{{ /NestedCondition }}{{ /BlockCondition }}
+	</body>
+</html>
