@@ -4,13 +4,14 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<Authors>Adam Barclay</Authors>
-		<Copyright>Copyright © 2020 Adam Barclay</Copyright>
+		<Copyright>Copyright © Adam Barclay</Copyright>
 		<Description>Mundane is a lightweight "no magic" web framework for .NET. This package provides Mundane with a view engine using a Mustache-like syntax.</Description>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<IncludeSymbols>true</IncludeSymbols>
 		<PackageIcon>Mundane.png</PackageIcon>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageTags>Mundane</PackageTags>
+		<ProjectUrl>https://github.com/adambarclay/mundane-viewengines-mustache</ProjectUrl>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Title>Mundane Mustache View Engine</Title>
@@ -18,7 +19,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0"/>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-		<PackageReference Include="Mundane" Version="4.0.0"/>
+		<PackageReference Include="Mundane" Version="5.0.0"/>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -20,7 +20,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask MustacheView(this ResponseStream responseStream, string templatePath)
 		{
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
@@ -57,12 +57,12 @@ namespace Mundane.ViewEngines.Mustache
 			T viewModel)
 			where T : notnull
 		{
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
 
-			if (viewModel == null)
+			if (viewModel is null)
 			{
 				throw new ArgumentNullException(nameof(viewModel));
 			}
@@ -96,12 +96,12 @@ namespace Mundane.ViewEngines.Mustache
 			MustacheViews mustacheViews,
 			string templatePath)
 		{
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
@@ -137,17 +137,17 @@ namespace Mundane.ViewEngines.Mustache
 			T viewModel)
 			where T : notnull
 		{
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
 
-			if (viewModel == null)
+			if (viewModel is null)
 			{
 				throw new ArgumentNullException(nameof(viewModel));
 			}
@@ -179,17 +179,17 @@ namespace Mundane.ViewEngines.Mustache
 			MustacheViews mustacheViews,
 			string templatePath)
 		{
-			if (outputStream == null)
+			if (outputStream is null)
 			{
 				throw new ArgumentNullException(nameof(outputStream));
 			}
 
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
@@ -225,22 +225,22 @@ namespace Mundane.ViewEngines.Mustache
 			T viewModel)
 			where T : notnull
 		{
-			if (outputStream == null)
+			if (outputStream is null)
 			{
 				throw new ArgumentNullException(nameof(outputStream));
 			}
 
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
 
-			if (viewModel == null)
+			if (viewModel is null)
 			{
 				throw new ArgumentNullException(nameof(viewModel));
 			}
@@ -268,12 +268,12 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="ViewModelPropertyNotFound">The view template contains a property name and a view model was not supplied.</exception>
 		public static async ValueTask<string> MustacheView(MustacheViews mustacheViews, string templatePath)
 		{
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
@@ -314,17 +314,17 @@ namespace Mundane.ViewEngines.Mustache
 			T viewModel)
 			where T : notnull
 		{
-			if (mustacheViews == null)
+			if (mustacheViews is null)
 			{
 				throw new ArgumentNullException(nameof(mustacheViews));
 			}
 
-			if (templatePath == null)
+			if (templatePath is null)
 			{
 				throw new ArgumentNullException(nameof(templatePath));
 			}
 
-			if (viewModel == null)
+			if (viewModel is null)
 			{
 				throw new ArgumentNullException(nameof(viewModel));
 			}

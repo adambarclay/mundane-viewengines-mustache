@@ -22,7 +22,7 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="MustacheCompilerError">An error is discovered during view compilation.</exception>
 		public MustacheViews(IFileProvider viewFileProvider)
 		{
-			if (viewFileProvider == null)
+			if (viewFileProvider is null)
 			{
 				throw new ArgumentNullException(nameof(viewFileProvider));
 			}

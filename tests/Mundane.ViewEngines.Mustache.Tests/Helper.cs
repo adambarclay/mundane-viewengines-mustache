@@ -44,25 +44,185 @@ namespace Mundane.ViewEngines.Mustache.Tests
 		{
 			var response = await MundaneEngine.ExecuteRequest(
 				MundaneEndpointFactory.Create(() => Response.Ok(bodyWriter)),
-				new Request(
-					string.Empty,
-					string.Empty,
-					new Dictionary<string, string>(0),
-					new Dictionary<string, string>(0),
-					new MemoryStream(Array.Empty<byte>(), false),
-					new Dictionary<string, string>(0),
-					new Dictionary<string, string>(0),
-					new Dictionary<string, string>(0),
-					new Dictionary<string, FileUpload>(0),
-					dependencyFinder,
-					new RequestHost(string.Empty, string.Empty, string.Empty),
-					CancellationToken.None));
+				new FakeRequest(dependencyFinder));
 
 			await using (var stream = new MemoryStream())
 			{
 				await response.WriteBodyToStream(stream);
 
 				return Encoding.UTF8.GetString(stream.ToArray());
+			}
+		}
+
+		private sealed class FakeRequest : Request
+		{
+			private readonly DependencyFinder dependencyFinder;
+
+			internal FakeRequest(DependencyFinder dependencyFinder)
+			{
+				this.dependencyFinder = dependencyFinder;
+			}
+
+			public EnumerableCollection<KeyValuePair<string, string>> AllCookies
+			{
+				get
+				{
+					return new EnumerableCollection<KeyValuePair<string, string>>(
+						new List<KeyValuePair<string, string>>(0));
+				}
+			}
+
+			public EnumerableCollection<KeyValuePair<string, FileUpload>> AllFileParameters
+			{
+				get
+				{
+					return new EnumerableCollection<KeyValuePair<string, FileUpload>>(
+						new List<KeyValuePair<string, FileUpload>>(0));
+				}
+			}
+
+			public EnumerableCollection<KeyValuePair<string, string>> AllFormParameters
+			{
+				get
+				{
+					return new EnumerableCollection<KeyValuePair<string, string>>(
+						new List<KeyValuePair<string, string>>(0));
+				}
+			}
+
+			public EnumerableCollection<KeyValuePair<string, string>> AllHeaders
+			{
+				get
+				{
+					return new EnumerableCollection<KeyValuePair<string, string>>(
+						new List<KeyValuePair<string, string>>(0));
+				}
+			}
+
+			public EnumerableCollection<KeyValuePair<string, string>> AllQueryParameters
+			{
+				get
+				{
+					return new EnumerableCollection<KeyValuePair<string, string>>(
+						new List<KeyValuePair<string, string>>(0));
+				}
+			}
+
+			public Stream Body
+			{
+				get
+				{
+					return new MemoryStream(Array.Empty<byte>());
+				}
+			}
+
+			public string Host
+			{
+				get
+				{
+					return string.Empty;
+				}
+			}
+
+			public string Method
+			{
+				get
+				{
+					return HttpMethod.Get;
+				}
+			}
+
+			public string Path
+			{
+				get
+				{
+					return "/";
+				}
+			}
+
+			public string PathBase
+			{
+				get
+				{
+					return string.Empty;
+				}
+			}
+
+			public CancellationToken RequestAborted
+			{
+				get
+				{
+					return CancellationToken.None;
+				}
+			}
+
+			public string Scheme
+			{
+				get
+				{
+					return "https";
+				}
+			}
+
+			public string Cookie(string cookieName)
+			{
+				return string.Empty;
+			}
+
+			public bool CookieExists(string cookieName)
+			{
+				return false;
+			}
+
+			public T Dependency<T>()
+				where T : notnull
+			{
+				return this.dependencyFinder.Find<T>(this);
+			}
+
+			public FileUpload File(string parameterName)
+			{
+				return FileUpload.Unknown;
+			}
+
+			public bool FileExists(string parameterName)
+			{
+				return false;
+			}
+
+			public string Form(string parameterName)
+			{
+				return string.Empty;
+			}
+
+			public bool FormExists(string parameterName)
+			{
+				return false;
+			}
+
+			public string Header(string headerName)
+			{
+				return string.Empty;
+			}
+
+			public bool HeaderExists(string headerName)
+			{
+				return false;
+			}
+
+			public string Query(string parameterName)
+			{
+				return string.Empty;
+			}
+
+			public bool QueryExists(string parameterName)
+			{
+				return false;
+			}
+
+			public string Route(string parameterName)
+			{
+				return string.Empty;
 			}
 		}
 	}

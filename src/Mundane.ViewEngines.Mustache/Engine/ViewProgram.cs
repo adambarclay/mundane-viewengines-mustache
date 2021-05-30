@@ -185,9 +185,14 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		{
 			foreach (var identifier in identifiers)
 			{
-				if (valueObject == null)
+				if (valueObject is null)
 				{
 					return (false, null);
+				}
+
+				if (identifiers.Length == 2 && identifiers[0].Length == 0 && identifiers[1].Length == 0)
+				{
+					return (true, valueObject);
 				}
 
 				if (valueObject is IDictionary dictionaryModel)
@@ -249,14 +254,14 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		{
 			var valueObject = ViewProgram.GetValue(objectStack, identifiers);
 
-			if (valueObject == null)
+			if (valueObject is null)
 			{
 				return Array.Empty<byte>();
 			}
 
 			var value = valueObject.ToString();
 
-			if (value == null)
+			if (value is null)
 			{
 				return Array.Empty<byte>();
 			}
