@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Text;
 using Mundane.ViewEngines.Mustache.Engine;
 
@@ -33,7 +34,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var literalOffset = 0;
 			var identifierOffset = 0;
 
-			foreach ((var _, var compiledProgram) in programs)
+			foreach ((var currentPath, var compiledProgram) in programs)
 			{
 				compiledProgram.Instructions.CopyTo(programInstructions, instructionOffset);
 
@@ -61,6 +62,22 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						programInstructions[instructionOffset + i] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + instructionOffset);
+					}
+					else if (instruction.InstructionType == InstructionType.Call)
+					{
+						var templateFileName = FileLookup.ResolvePath(
+							Path.Combine(
+								Path.GetDirectoryName(Path.GetFullPath(currentPath))!,
+								compiledProgram.TemplatePaths[instruction.Parameter]));
+
+						if (!entryPoints.TryGetValue(templateFileName, out var entryPoint))
+						{
+							throw new TemplateNotFound(templateFileName);
+						}
+
+						programInstructions[instructionOffset + i] = new Instruction(
+							instruction.InstructionType,
+							entryPoint);
 					}
 					else
 					{

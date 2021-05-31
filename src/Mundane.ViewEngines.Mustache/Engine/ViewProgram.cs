@@ -118,6 +118,13 @@ namespace Mundane.ViewEngines.Mustache.Engine
 						break;
 					}
 
+					case InstructionType.Call:
+					{
+						programStack[++stackCounter] = instruction.Parameter;
+
+						break;
+					}
+
 					case InstructionType.Return:
 					{
 						--stackCounter;

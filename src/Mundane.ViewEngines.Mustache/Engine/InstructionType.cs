@@ -4,6 +4,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 	{
 		BranchIfFalsy,
 		BranchIfTruthy,
+		Call,
 		Literal,
 		Loop,
 		OutputValue,

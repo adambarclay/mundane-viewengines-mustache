@@ -153,6 +153,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				return LexicalAnalyser.IdentifierStart;
 			}
 
+			if (character == '>')
+			{
+				state.tokens.Add(new Token(TokenType.Partial, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
 			state.tokens.Add(new Token(TokenType.OpenTag, state.currentLine, state.currentColumn));
 
 			return LexicalAnalyser.IdentifierStart(state, character);

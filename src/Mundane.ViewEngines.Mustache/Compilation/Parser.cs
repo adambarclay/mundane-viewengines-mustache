@@ -8,9 +8,10 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			1. P ::= ε
 			2. P ::= text P
 			3. P ::= {{ id }} P
-			4. P ::= {{# B
-			5. P ::= {{^ B
-			6. B ::= id }} P {{/ id }} P
+			4. P ::= {{> id }} P
+			5. P ::= {{# B
+			6. P ::= {{^ B
+			7. B ::= id }} P {{/ id }} P
 		*/
 		private static readonly Dictionary<TokenType, Dictionary<TokenType, int>> ParsingTable =
 			new Dictionary<TokenType, Dictionary<TokenType, int>>
@@ -21,11 +22,12 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						{ TokenType.Epsilon, 1 },
 						{ TokenType.Text, 2 },
 						{ TokenType.OpenTag, 3 },
-						{ TokenType.OpenBlock, 4 },
-						{ TokenType.InvertedBlock, 5 }
+						{ TokenType.Partial, 4 },
+						{ TokenType.OpenBlock, 5 },
+						{ TokenType.InvertedBlock, 6 }
 					}
 				},
-				{ TokenType.Block, new Dictionary<TokenType, int> { { TokenType.Identifier, 6 } } }
+				{ TokenType.Block, new Dictionary<TokenType, int> { { TokenType.Identifier, 7 } } }
 			};
 
 		internal static (bool Invalid, ParserError Error) Parse(
@@ -115,8 +117,9 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 						case 4:
 						{
-							tokenStack.Push(TokenType.Block);
-							tokenStack.Push(TokenType.OpenBlock);
+							tokenStack.Push(TokenType.CloseTag);
+							tokenStack.Push(TokenType.Identifier);
+							tokenStack.Push(TokenType.Partial);
 
 							break;
 						}
@@ -124,12 +127,20 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						case 5:
 						{
 							tokenStack.Push(TokenType.Block);
-							tokenStack.Push(TokenType.InvertedBlock);
+							tokenStack.Push(TokenType.OpenBlock);
 
 							break;
 						}
 
 						case 6:
+						{
+							tokenStack.Push(TokenType.Block);
+							tokenStack.Push(TokenType.InvertedBlock);
+
+							break;
+						}
+
+						case 7:
 						{
 							tokenStack.Pop();
 

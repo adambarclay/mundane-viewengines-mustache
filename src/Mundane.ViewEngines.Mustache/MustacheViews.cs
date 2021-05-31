@@ -11,8 +11,6 @@ namespace Mundane.ViewEngines.Mustache
 	/// <summary>A collection of view templates.</summary>
 	public sealed class MustacheViews
 	{
-		private static readonly string FullPathPrefix = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
-
 		private readonly ReadOnlyDictionary<string, int> entryPoints;
 		private readonly ViewProgram viewProgram;
 
@@ -44,7 +42,7 @@ namespace Mundane.ViewEngines.Mustache
 		internal async Task Execute<T>(Stream outputStream, string templatePath, T viewModel)
 			where T : notnull
 		{
-			if (this.entryPoints.TryGetValue(MustacheViews.ResolvePath(templatePath), out var entryPoint))
+			if (this.entryPoints.TryGetValue(FileLookup.ResolvePath(templatePath), out var entryPoint))
 			{
 				await this.viewProgram.Execute(outputStream, entryPoint, viewModel);
 			}
@@ -52,20 +50,6 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw new TemplateNotFound(templatePath);
 			}
-		}
-
-		private static string ResolvePath(string path)
-		{
-			path = path.Replace('\\', '/');
-
-			while (path.StartsWith('/'))
-			{
-				path = path[1..]!;
-			}
-
-			return Path.GetFullPath(path)
-				.Replace(MustacheViews.FullPathPrefix, string.Empty, StringComparison.Ordinal)
-				.Replace('\\', '/');
 		}
 	}
 }

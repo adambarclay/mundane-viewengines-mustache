@@ -11,6 +11,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 		InvertedBlock,
 		OpenBlock,
 		OpenTag,
+		Partial,
 		Program,
 		Text
 	}

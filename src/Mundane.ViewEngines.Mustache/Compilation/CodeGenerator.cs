@@ -10,10 +10,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var instructions = new List<Instruction>();
 			var literals = new List<string>();
 			var identifiers = new List<string[]>();
+			var templatePaths = new List<string>();
 
 			var blockStack = new Stack<(TokenType, int)>();
 
 			var scannedLiteralOffset = 0;
+
+			var partial = false;
 
 			for (var tokenOffset = 0; tokenOffset < tokens.Count; tokenOffset++)
 			{
@@ -79,9 +82,27 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 					case TokenType.Identifier:
 					{
-						instructions.Add(new Instruction(InstructionType.OutputValue, identifiers.Count));
+						if (partial)
+						{
+							instructions.Add(new Instruction(InstructionType.Call, templatePaths.Count));
 
-						identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+							templatePaths.Add(scannedliterals[scannedLiteralOffset++]);
+
+							partial = false;
+						}
+						else
+						{
+							instructions.Add(new Instruction(InstructionType.OutputValue, identifiers.Count));
+
+							identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+						}
+
+						break;
+					}
+
+					case TokenType.Partial:
+					{
+						partial = true;
 
 						break;
 					}
@@ -95,7 +116,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				}
 			}
 
-			return new CompiledProgram(instructions, literals, identifiers);
+			return new CompiledProgram(instructions, literals, identifiers, templatePaths);
 		}
 	}
 }
