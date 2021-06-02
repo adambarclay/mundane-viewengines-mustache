@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,6 +9,8 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 {
 	internal static class Linker
 	{
+		private static readonly string PathRoot = Path.GetPathRoot(Environment.CurrentDirectory)![..^1]!;
+
 		internal static (ViewProgram ViewProgram, ReadOnlyDictionary<string, int> EntryPoints) Link(
 			List<(string Path, CompiledProgram Program)> programs)
 		{
@@ -65,9 +68,9 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 					}
 					else if (instruction.InstructionType == InstructionType.Call)
 					{
-						var templateFileName = FileLookup.ResolvePath(
+						var templateFileName = Linker.ResolvePath(
 							Path.Combine(
-								Path.GetDirectoryName(Path.GetFullPath(currentPath))!,
+								Path.GetDirectoryName(currentPath)!,
 								compiledProgram.TemplatePaths[instruction.Parameter]));
 
 						if (!entryPoints.TryGetValue(templateFileName, out var entryPoint))
@@ -99,6 +102,18 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 			return (new ViewProgram(programInstructions, programLiterals, programIdentifiers),
 				new ReadOnlyDictionary<string, int>(entryPoints));
+		}
+
+		private static string ResolvePath(string path)
+		{
+			path = Path.GetFullPath(path);
+
+			if (Linker.PathRoot.Length > 0)
+			{
+				path = path.Replace(Linker.PathRoot, string.Empty, StringComparison.Ordinal);
+			}
+
+			return path.Replace('\\', '/');
 		}
 	}
 }

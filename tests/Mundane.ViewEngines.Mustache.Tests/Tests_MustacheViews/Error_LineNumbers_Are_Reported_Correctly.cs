@@ -14,7 +14,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/LineNumberReporting/Linux")));
 
-			Assert.Equal("Linux.dat Ln 3 Ch 18: }} expected.", exception.Message);
+			Assert.Equal("/Linux.dat Ln 3 Ch 18: }} expected.", exception.Message);
 		}
 
 		[Fact]
@@ -24,7 +24,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/LineNumberReporting/Mac")));
 
-			Assert.Equal("Mac.dat Ln 3 Ch 18: }} expected.", exception.Message);
+			Assert.Equal("/Mac.dat Ln 3 Ch 18: }} expected.", exception.Message);
 		}
 
 		[Fact]
@@ -34,7 +34,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/LineNumberReporting/Windows")));
 
-			Assert.Equal("Windows.dat Ln 3 Ch 18: }} expected.", exception.Message);
+			Assert.Equal("/Windows.dat Ln 3 Ch 18: }} expected.", exception.Message);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/InvertedBlockIdentifiers")));
 
 			Assert.Equal(
-				"InvertedBlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
+				"/InvertedBlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
 				exception.Message);
 		}
 
@@ -28,7 +28,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/BlockIdentifiers")));
 
 			Assert.Equal(
-				"BlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
+				"/BlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
 				exception.Message);
 		}
 
@@ -39,7 +39,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingOpeningBlock")));
 
-			Assert.Equal("MissingOpeningBlock.html Ln 6 Ch 40: Unexpected token \"{{/\".", exception.Message);
+			Assert.Equal("/MissingOpeningBlock.html Ln 6 Ch 40: Unexpected token \"{{/\".", exception.Message);
 		}
 
 		[Fact]
@@ -50,7 +50,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/NestedBlockIdentifiers")));
 
 			Assert.Equal(
-				"NestedBlockIdentifiers.html Ln 6 Ch 62: Block closing tag {{/BlockCondition}} does not correspond to opening tag {{WrongIdentifier}}.",
+				"/NestedBlockIdentifiers.html Ln 6 Ch 62: Block closing tag {{/BlockCondition}} does not correspond to opening tag {{WrongIdentifier}}.",
 				exception.Message);
 		}
 
@@ -61,7 +61,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingCloseBrace")));
 
-			Assert.Equal("MissingCloseBrace.html Ln 3 Ch 18: }} expected.", exception.Message);
+			Assert.Equal("/MissingCloseBrace.html Ln 3 Ch 18: }} expected.", exception.Message);
 		}
 
 		[Fact]
@@ -71,7 +71,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingIdentifier")));
 
-			Assert.Equal("MissingIdentifier.html Ln 3 Ch 13: identifier expected.", exception.Message);
+			Assert.Equal("/MissingIdentifier.html Ln 3 Ch 13: identifier expected.", exception.Message);
 		}
 
 		[Fact]
@@ -81,7 +81,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/TooManyIdentifiers")));
 
-			Assert.Equal("TooManyIdentifiers.html Ln 3 Ch 24: }} expected.", exception.Message);
+			Assert.Equal("/TooManyIdentifiers.html Ln 3 Ch 24: }} expected.", exception.Message);
 		}
 
 		[Fact]

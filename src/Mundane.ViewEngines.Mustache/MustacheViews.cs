@@ -42,7 +42,7 @@ namespace Mundane.ViewEngines.Mustache
 		internal async Task Execute<T>(Stream outputStream, string templatePath, T viewModel)
 			where T : notnull
 		{
-			if (this.entryPoints.TryGetValue(FileLookup.ResolvePath(templatePath), out var entryPoint))
+			if (this.entryPoints.TryGetValue(MustacheViews.NormalisePath(templatePath), out var entryPoint))
 			{
 				await this.viewProgram.Execute(outputStream, entryPoint, viewModel);
 			}
@@ -50,6 +50,18 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				throw new TemplateNotFound(templatePath);
 			}
+		}
+
+		private static string NormalisePath(string path)
+		{
+			path = path.Replace('\\', '/');
+
+			if (!path.StartsWith('/'))
+			{
+				path = "/" + path;
+			}
+
+			return path;
 		}
 	}
 }
