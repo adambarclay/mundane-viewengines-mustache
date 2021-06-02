@@ -106,14 +106,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 		private static string ResolvePath(string path)
 		{
-			path = Path.GetFullPath(path);
-
-			if (Linker.PathRoot.Length > 0)
-			{
-				path = path.Replace(Linker.PathRoot, string.Empty, StringComparison.Ordinal);
-			}
-
-			return path.Replace('\\', '/');
+			return Path.GetFullPath(path)[Linker.PathRoot.Length..]!.Replace('\\', '/');
 		}
 	}
 }
