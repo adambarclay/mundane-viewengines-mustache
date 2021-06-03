@@ -52,9 +52,8 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 					case InstructionType.OutputValue:
 					{
-						var valueString = ViewProgram.GetValueString(
-							objectStack,
-							this.identifiers[instruction.Parameter]);
+						var valueString = ViewProgram.GetValue(objectStack, this.identifiers[instruction.Parameter])
+							?.ToString();
 
 						if (valueString is not null)
 						{
@@ -66,9 +65,8 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 					case InstructionType.OutputValueRaw:
 					{
-						var valueString = ViewProgram.GetValueString(
-							objectStack,
-							this.identifiers[instruction.Parameter]);
+						var valueString = ViewProgram.GetValue(objectStack, this.identifiers[instruction.Parameter])
+							?.ToString();
 
 						if (valueString is not null)
 						{
@@ -274,18 +272,6 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			}
 
 			throw new ViewModelPropertyNotFound(identifiers);
-		}
-
-		private static string? GetValueString(Stack<object?> objectStack, string[] identifiers)
-		{
-			var valueObject = ViewProgram.GetValue(objectStack, identifiers);
-
-			if (valueObject is null)
-			{
-				return null;
-			}
-
-			return valueObject.ToString();
 		}
 	}
 }
