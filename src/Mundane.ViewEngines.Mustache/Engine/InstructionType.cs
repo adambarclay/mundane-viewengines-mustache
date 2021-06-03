@@ -8,6 +8,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		Literal,
 		Loop,
 		OutputValue,
+		OutputValueRaw,
 		PushValue,
 		Return
 	}

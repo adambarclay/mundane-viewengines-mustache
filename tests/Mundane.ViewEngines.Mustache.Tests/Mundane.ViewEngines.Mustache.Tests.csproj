@@ -17,6 +17,7 @@
 		<None Remove="Results\Block\Multi.html"/>
 		<None Remove="Results\Block\OutputCurrent.html"/>
 		<None Remove="Results\Block\WhitespaceVariations.html"/>
+		<None Remove="Results\Raw\Raw.html"/>
 		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<None Remove="Results\SimpleSubstitutions\SingleNoOutput.html"/>
 		<None Remove="Templates\Block\Nested\Nested.html"/>
@@ -29,6 +30,7 @@
 		<None Remove="Templates\Partials\Partial.html"/>
 		<None Remove="Templates\Partials\SimplePartial\BlockPartial.html"/>
 		<None Remove="Templates\Partials\SimplePartial\SimplePartial.html"/>
+		<None Remove="Templates\Raw\Raw.html"/>
 		<None Remove="Templates\SimpleSubstitutions\BraceCloseInIdentifier.html"/>
 		<None Remove="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
 		<None Remove="Templates\SimpleSubstitutions\Single\Single.html"/>
@@ -48,6 +50,7 @@
 		<EmbeddedResource Include="Results\Block\Simple.html"/>
 		<EmbeddedResource Include="Results\Block\WhitespaceVariations.html"/>
 		<EmbeddedResource Include="Results\NoSubstitutions\NoSubstitutions.html"/>
+		<EmbeddedResource Include="Results\Raw\Raw.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\SingleNoOutput.html"/>
 		<EmbeddedResource Include="Results\SimpleSubstitutions\SimpleSubstitutions.html"/>
@@ -63,6 +66,7 @@
 		<EmbeddedResource Include="Templates\Partials\Partial.html"/>
 		<EmbeddedResource Include="Templates\Partials\BlockPartial\BlockPartial.html"/>
 		<EmbeddedResource Include="Templates\Partials\SimplePartial\SimplePartial.html"/>
+		<EmbeddedResource Include="Templates\Raw\Raw.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceCloseInIdentifier\BraceCloseInIdentifier.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\Single\Single.html"/>

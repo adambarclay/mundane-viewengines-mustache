@@ -17,6 +17,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var scannedLiteralOffset = 0;
 
 			var partial = false;
+			var raw = false;
 
 			for (var tokenOffset = 0; tokenOffset < tokens.Count; tokenOffset++)
 			{
@@ -90,12 +91,27 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 							partial = false;
 						}
+						else if (raw)
+						{
+							instructions.Add(new Instruction(InstructionType.OutputValueRaw, identifiers.Count));
+
+							identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
+
+							raw = false;
+						}
 						else
 						{
 							instructions.Add(new Instruction(InstructionType.OutputValue, identifiers.Count));
 
 							identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
 						}
+
+						break;
+					}
+
+					case TokenType.Raw:
+					{
+						raw = true;
 
 						break;
 					}

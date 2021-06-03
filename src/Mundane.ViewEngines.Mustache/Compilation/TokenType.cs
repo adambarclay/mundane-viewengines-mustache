@@ -13,6 +13,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 		OpenTag,
 		Partial,
 		Program,
+		Raw,
 		Text
 	}
 }

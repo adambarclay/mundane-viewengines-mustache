@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -53,8 +52,28 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 					case InstructionType.OutputValue:
 					{
-						await outputStream.WriteAsync(
-							ViewProgram.GetValueBytes(objectStack, this.identifiers[instruction.Parameter]));
+						var valueString = ViewProgram.GetValueString(
+							objectStack,
+							this.identifiers[instruction.Parameter]);
+
+						if (valueString is not null)
+						{
+							await outputStream.WriteAsync(Encoding.UTF8.GetBytes(WebUtility.HtmlEncode(valueString)));
+						}
+
+						break;
+					}
+
+					case InstructionType.OutputValueRaw:
+					{
+						var valueString = ViewProgram.GetValueString(
+							objectStack,
+							this.identifiers[instruction.Parameter]);
+
+						if (valueString is not null)
+						{
+							await outputStream.WriteAsync(Encoding.UTF8.GetBytes(valueString));
+						}
 
 						break;
 					}
@@ -257,23 +276,16 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			throw new ViewModelPropertyNotFound(identifiers);
 		}
 
-		private static byte[] GetValueBytes(Stack<object?> objectStack, string[] identifiers)
+		private static string? GetValueString(Stack<object?> objectStack, string[] identifiers)
 		{
 			var valueObject = ViewProgram.GetValue(objectStack, identifiers);
 
 			if (valueObject is null)
 			{
-				return Array.Empty<byte>();
+				return null;
 			}
 
-			var value = valueObject.ToString();
-
-			if (value is null)
-			{
-				return Array.Empty<byte>();
-			}
-
-			return Encoding.UTF8.GetBytes(WebUtility.HtmlEncode(value));
+			return valueObject.ToString();
 		}
 	}
 }

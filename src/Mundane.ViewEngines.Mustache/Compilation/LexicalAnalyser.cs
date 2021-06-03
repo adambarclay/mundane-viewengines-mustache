@@ -132,6 +132,20 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				return LexicalAnalyser.DoubleBraceOpen;
 			}
 
+			if (character == '&')
+			{
+				state.tokens.Add(new Token(TokenType.Raw, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (character == '>')
+			{
+				state.tokens.Add(new Token(TokenType.Partial, state.currentLine, state.currentColumn));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
 			if (character == '#')
 			{
 				state.tokens.Add(new Token(TokenType.OpenBlock, state.currentLine, state.currentColumn));
@@ -149,13 +163,6 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			if (character == '^')
 			{
 				state.tokens.Add(new Token(TokenType.InvertedBlock, state.currentLine, state.currentColumn));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '>')
-			{
-				state.tokens.Add(new Token(TokenType.Partial, state.currentLine, state.currentColumn));
 
 				return LexicalAnalyser.IdentifierStart;
 			}
