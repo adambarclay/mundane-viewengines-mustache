@@ -57,12 +57,12 @@ The following are the standard signatures where the `MustacheViews` object will 
 ```c#
     public static async ValueTask MustacheView(
         this ResponseStream responseStream,
-        string templatePath)
+        string templatePath);
 
     public static async ValueTask MustacheView(
         this ResponseStream responseStream,
         string templatePath,
-        object viewModel)
+        object viewModel);
 ```
 
 The following also write the output to the response stream, but expect the `MustacheViews` object to be supplied explicitly.
@@ -71,13 +71,13 @@ The following also write the output to the response stream, but expect the `Must
     public static async ValueTask MustacheView(
         this ResponseStream responseStream,
         MustacheViews mustacheViews,
-        string templatePath)
+        string templatePath);
 
     public static async ValueTask MustacheView(
         this ResponseStream responseStream,
         MustacheViews mustacheViews,
         string templatePath,
-        object viewModel)
+        object viewModel);
 ```
 
 The following expect the `MustacheViews` object to be supplied explicitly, and write the output to the supplied `Stream`.
@@ -86,13 +86,13 @@ The following expect the `MustacheViews` object to be supplied explicitly, and w
     public static async ValueTask MustacheView(
         Stream outputStream,
         MustacheViews mustacheViews,
-        string templatePath)
+        string templatePath);
 
     public static async ValueTask MustacheView(
         Stream outputStream,
         MustacheViews mustacheViews,
         string templatePath,
-        object viewModel)
+        object viewModel);
 ```
 
 The following expect the `MustacheViews` object to be supplied explicitly, and return the output as a `string`.
@@ -100,12 +100,12 @@ The following expect the `MustacheViews` object to be supplied explicitly, and r
 ```c#
     public static async ValueTask<string> MustacheView(
         MustacheViews mustacheViews,
-        string templatePath)
+        string templatePath);
 
     public static async ValueTask<string> MustacheView(
         MustacheViews mustacheViews,
         string templatePath,
-        object viewModel)
+        object viewModel);
 ```
 
 ## Mustache
