@@ -54,23 +54,59 @@ Then in your controller call `MustacheView()` on the `ResponseStream`, passing t
 
 The following are the standard signatures where the `MustacheViews` object will be retrieved from the `Request` dependencies, and the output will be written to the response stream. An exception will be thrown if the `MustacheViews` object has not been registered as a dependency.
 
-`public static async ValueTask MustacheView(this ResponseStream responseStream, string templatePath)`  
-`public static async ValueTask MustacheView(this ResponseStream responseStream, string templatePath, object viewModel)`
+```c#
+    public static async ValueTask MustacheView(
+        this ResponseStream responseStream,
+        string templatePath)
+
+    public static async ValueTask MustacheView(
+        this ResponseStream responseStream,
+        string templatePath,
+        object viewModel)
+```
 
 The following also write the output to the response stream, but expect the `MustacheViews` object to be supplied explicitly.
 
-`public static async ValueTask MustacheView(this ResponseStream responseStream, MustacheViews mustacheViews, string templatePath)`  
-`public static async ValueTask MustacheView(this ResponseStream responseStream, MustacheViews mustacheViews, string templatePath, object viewModel)`  
+```c#
+    public static async ValueTask MustacheView(
+        this ResponseStream responseStream,
+        MustacheViews mustacheViews,
+        string templatePath)
+
+    public static async ValueTask MustacheView(
+        this ResponseStream responseStream,
+        MustacheViews mustacheViews,
+        string templatePath,
+        object viewModel)
+```
 
 The following expect the `MustacheViews` object to be supplied explicitly, and write the output to the supplied `Stream`.
 
-`public static async ValueTask MustacheView(Stream outputStream, MustacheViews mustacheViews, string templatePath)`  
-`public static async ValueTask MustacheView(Stream outputStream, MustacheViews mustacheViews, string templatePath, object viewModel)`  
+```c#
+    public static async ValueTask MustacheView(
+        Stream outputStream,
+        MustacheViews mustacheViews,
+        string templatePath)
+
+    public static async ValueTask MustacheView(
+        Stream outputStream,
+        MustacheViews mustacheViews,
+        string templatePath,
+        object viewModel)
+```
 
 The following expect the `MustacheViews` object to be supplied explicitly, and return the output as a `string`.
 
-`public static async ValueTask<string> MustacheView(MustacheViews mustacheViews, string templatePath)`  
-`public static async ValueTask<string> MustacheView(MustacheViews mustacheViews, string templatePath, object viewModel)`
+```c#
+    public static async ValueTask<string> MustacheView(
+        MustacheViews mustacheViews,
+        string templatePath)
+
+    public static async ValueTask<string> MustacheView(
+        MustacheViews mustacheViews,
+        string templatePath,
+        object viewModel)
+```
 
 ## Mustache
 
@@ -80,25 +116,25 @@ See the [Mustache specification](https://mustache.github.io/mustache.5.html) for
 
 To output a value from a view model use `{{name}}` where "name" is a property or dictionary key on the view model.
 
-Variables are HTML escaped e.g. if name contained "&lt;script&gt;" it would be output as "&amp;lt;script&amp;gt;".
+Variables are HTML escaped e.g. if `name` contained `<script>` it would be output as `&lt;script&gt;`.
 
-To output a value without HTML escaping use `{{&name}}`. Note that triple braces `{{{name}}}` for achieving the same thing are not supported.
+To output a value without HTML escaping use `{{&name}}`. Note that triple braces `{{{name}}}` for achieving the same thing is not supported.
 
 ### Sections
 
 `{{#name}}` begins a section and `{{/name}}` ends a section.
 
-"Falsy" values or empty lists for `name` will not output the section contents.
+_Falsy_ values or empty lists for `name` will not output the section contents.
 
-"Truthy" values will output the section contents once. Non-empty lists will output the section contents once for each item in the list.
+_Truthy_ values will output the section contents once. Non-empty lists will output the section contents once for each item in the list.
 
 ### Inverted Sections
 
 An inverted section begins with `{{^name}}` and ends with`{{/name}}`.
 
-"Falsy" values or empty lists for `name` will output the section contents once.
+_Falsy_ values or empty lists for `name` will output the section contents once.
 
-"Truthy" values or non-empty lists will not output the section contents.
+_Truthy_ values or non-empty lists will not output the section contents.
 
 ### Comments
 
@@ -106,7 +142,7 @@ Comments are specified with `{{! This is a comment. }}`. Everything between the 
 
 ### Partials
 
-Partials are specified with `{{> mypartial.html }}`. The contents of "mypartial.html" will be output in place of the tag, and will inherit the current view model context.
+Partials are specified with `{{> mypartial.html }}`. The contents of `mypartial.html` will be output in place of the tag, and will inherit the current view model context.
 
 ### Layout
 
