@@ -104,11 +104,36 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			return LexicalAnalyser.Text;
 		}
 
+		private static LexerState Comment(LexicalAnalyser state, char character)
+		{
+			if (character == '}')
+			{
+				return LexicalAnalyser.CommentBraceClose;
+			}
+
+			return LexicalAnalyser.Comment;
+		}
+
+		private static LexerState CommentBraceClose(LexicalAnalyser state, char character)
+		{
+			if (character == '}')
+			{
+				return LexicalAnalyser.Text;
+			}
+
+			return LexicalAnalyser.Comment;
+		}
+
 		private static LexerState DoubleBraceOpen(LexicalAnalyser state, char character)
 		{
 			if (char.IsWhiteSpace(character))
 			{
 				return LexicalAnalyser.DoubleBraceOpen;
+			}
+
+			if (character == '!')
+			{
+				return LexicalAnalyser.Comment;
 			}
 
 			if (character == '&')

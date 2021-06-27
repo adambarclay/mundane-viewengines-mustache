@@ -19,6 +19,7 @@
 		<None Remove="Results\Block\Multi.html"/>
 		<None Remove="Results\Block\OutputCurrent.html"/>
 		<None Remove="Results\Block\WhitespaceVariations.html"/>
+		<None Remove="Results\Comments\Comments.html"/>
 		<None Remove="Results\Layout\LayoutWithAllValues.html"/>
 		<None Remove="Results\Layout\LayoutWithDefaults.html"/>
 		<None Remove="Results\Layout\LayoutWithEnumerator.html"/>
@@ -34,6 +35,8 @@
 		<None Remove="Templates\Block\Single.html"/>
 		<None Remove="Templates\Block\WhitespaceVariations\WhitespaceVariations.html"/>
 		<None Remove="Errors\MissingPartial\MissingPartial.html"/>
+		<None Remove="Templates\Comments\Comments.html"/>
+		<None Remove="Templates\Comments\CommentsWithSingleCloseBrace.html"/>
 		<None Remove="Templates\Layout\Layout.html"/>
 		<None Remove="Templates\Layout\LayoutWithAllValues.html"/>
 		<None Remove="Templates\Layout\LayoutWithDefaults.html"/>
@@ -64,6 +67,7 @@
 		<EmbeddedResource Include="Results\Block\Multi.html"/>
 		<EmbeddedResource Include="Results\Block\Simple.html"/>
 		<EmbeddedResource Include="Results\Block\WhitespaceVariations.html"/>
+		<EmbeddedResource Include="Results\Comments\Comments.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithEnumerator.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithExtraText.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithSomeValues.html"/>
@@ -81,6 +85,8 @@
 		<EmbeddedResource Include="Templates\Block\OutputCurrent\OutputCurrent.html"/>
 		<EmbeddedResource Include="Templates\Block\Simple\Simple.html"/>
 		<EmbeddedResource Include="Templates\Block\WhitespaceVariations\WhitespaceVariations.html"/>
+		<EmbeddedResource Include="Templates\Comments\CommentsWithSingleCloseBrace.html"/>
+		<EmbeddedResource Include="Templates\Comments\Comments.html"/>
 		<EmbeddedResource Include="Templates\Layout\Layout.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithAllValues.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithExtraText.html"/>
@@ -103,7 +109,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.6"/>
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.7"/>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0"/>
 		<PackageReference Include="Moq" Version="4.16.1"/>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
