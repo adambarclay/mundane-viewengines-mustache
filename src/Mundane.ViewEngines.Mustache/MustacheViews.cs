@@ -39,8 +39,7 @@ namespace Mundane.ViewEngines.Mustache
 			}
 		}
 
-		internal async Task Execute<T>(Stream outputStream, string templatePath, T viewModel)
-			where T : notnull
+		internal async Task Execute(Stream outputStream, string templatePath, object viewModel)
 		{
 			if (this.entryPoints.TryGetValue(MustacheViews.NormalisePath(templatePath), out var entryPoint))
 			{

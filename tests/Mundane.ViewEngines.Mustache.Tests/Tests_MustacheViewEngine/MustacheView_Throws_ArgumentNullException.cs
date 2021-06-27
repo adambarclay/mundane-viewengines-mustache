@@ -10,6 +10,44 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 	public static class MustacheView_Throws_ArgumentNullException
 	{
 		[Fact]
+		public static async Task When_The_MustacheViews_Parameter_Is_Null()
+		{
+			var dependencies =
+				new Dependencies(new Dependency<MustacheViews>(new MustacheViews(new NullFileProvider())));
+
+			var responseStreamNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await Helper.Run(dependencies, o => o.MustacheView(null!, "Index.html")));
+
+			Assert.Equal("mustacheViews", responseStreamNoModel.ParamName!);
+
+			var responseStreamModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await Helper.Run(dependencies, o => o.MustacheView(null!, "Index.html", new object())));
+
+			Assert.Equal("mustacheViews", responseStreamModel.ParamName!);
+
+			var streamNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await Helper.Run(stream => MustacheViewEngine.MustacheView(stream, null!, "Index.html")));
+
+			Assert.Equal("mustacheViews", streamNoModel.ParamName!);
+
+			var streamModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await Helper.Run(
+					stream => MustacheViewEngine.MustacheView(stream, null!, "Index.html", new object())));
+
+			Assert.Equal("mustacheViews", streamModel.ParamName!);
+
+			var stringNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await MustacheViewEngine.MustacheView(null!, "Index.html"));
+
+			Assert.Equal("mustacheViews", stringNoModel.ParamName!);
+
+			var stringModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
+				async () => await MustacheViewEngine.MustacheView(null!, "Index.html", new object()));
+
+			Assert.Equal("mustacheViews", stringModel.ParamName!);
+		}
+
+		[Fact]
 		public static async Task When_The_OutputStream_Parameter_Is_Null()
 		{
 			var views = new MustacheViews(new NullFileProvider());
@@ -49,44 +87,6 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine
 					async () => await entryPoint(views, "Index.html", null!));
 
 			Assert.Equal("viewModel", exception.ParamName!);
-		}
-
-		[Fact]
-		public static async Task When_The_Views_Parameter_Is_Null()
-		{
-			var dependencies =
-				new Dependencies(new Dependency<MustacheViews>(new MustacheViews(new NullFileProvider())));
-
-			var responseStreamNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await Helper.Run(dependencies, o => o.MustacheView((MustacheViews)null!, "Index.html")));
-
-			Assert.Equal("mustacheViews", responseStreamNoModel.ParamName!);
-
-			var responseStreamModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await Helper.Run(dependencies, o => o.MustacheView(null!, "Index.html", new object())));
-
-			Assert.Equal("mustacheViews", responseStreamModel.ParamName!);
-
-			var streamNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await Helper.Run(stream => MustacheViewEngine.MustacheView(stream, null!, "Index.html")));
-
-			Assert.Equal("mustacheViews", streamNoModel.ParamName!);
-
-			var streamModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await Helper.Run(
-					stream => MustacheViewEngine.MustacheView(stream, null!, "Index.html", new object())));
-
-			Assert.Equal("mustacheViews", streamModel.ParamName!);
-
-			var stringNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await MustacheViewEngine.MustacheView(null!, "Index.html"));
-
-			Assert.Equal("mustacheViews", stringNoModel.ParamName!);
-
-			var stringModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-				async () => await MustacheViewEngine.MustacheView(null!, "Index.html", new object()));
-
-			Assert.Equal("mustacheViews", stringModel.ParamName!);
 		}
 	}
 }

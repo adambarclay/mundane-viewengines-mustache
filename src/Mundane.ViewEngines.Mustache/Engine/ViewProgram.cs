@@ -30,8 +30,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			this.replacements = replacements;
 		}
 
-		internal async ValueTask Execute<T>(Stream outputStream, int entryPoint, T viewModel)
-			where T : notnull
+		internal async ValueTask Execute(Stream outputStream, int entryPoint, object viewModel)
 		{
 			var programStack = new int[128];
 			var stackCounter = 0;
