@@ -52,6 +52,12 @@ Then in your controller call `MustacheView()` on the `ResponseStream`, passing t
 
 ## Method Signatures
 
+These methods all belong to:
+
+```c#
+    public static class MustacheViewEngine
+```
+
 The following are the standard signatures where the `MustacheViews` object will be retrieved from the `Request` dependencies, and the output will be written to the response stream. An exception will be thrown if the `MustacheViews` object has not been registered as a dependency.
 
 ```c#
