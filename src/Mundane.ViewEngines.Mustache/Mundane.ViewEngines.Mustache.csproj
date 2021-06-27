@@ -10,7 +10,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<PackageIcon>Mundane.png</PackageIcon>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageTags>Mundane</PackageTags>
+		<PackageTags>Mundane;View Engine;Mustache</PackageTags>
 		<PackageProjectUrl>https://github.com/adambarclay/mundane-viewengines-mustache</PackageProjectUrl>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
