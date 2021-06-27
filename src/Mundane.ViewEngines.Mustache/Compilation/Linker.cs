@@ -15,10 +15,12 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			List<(string Path, CompiledProgram Program)> programs)
 		{
 			var entryPoints = new Dictionary<string, int>(programs.Count);
+			var replacementPlaceholders = new Dictionary<string, Dictionary<string, int>>(programs.Count);
 
 			var instructionCount = 0;
 			var literalCount = 0;
 			var identifierCount = 0;
+			var replacementCount = 0;
 
 			foreach ((var path, var compiledProgram) in programs)
 			{
@@ -27,34 +29,41 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				instructionCount += compiledProgram.Instructions.Count;
 				literalCount += compiledProgram.Literals.Count;
 				identifierCount += compiledProgram.Identifiers.Count;
+				replacementCount += compiledProgram.Replacements.Count;
+
+				replacementPlaceholders.Add(path, compiledProgram.ReplacementPlaceholders);
 			}
 
 			var programInstructions = new Instruction[instructionCount];
 			var programLiterals = new byte[literalCount][];
 			var programIdentifiers = new string[identifierCount][];
+			var replacements = new Replacement[replacementCount][];
 
 			var instructionOffset = 0;
 			var literalOffset = 0;
 			var identifierOffset = 0;
+			var replacementsOffset = 0;
 
 			foreach ((var currentPath, var compiledProgram) in programs)
 			{
 				compiledProgram.Instructions.CopyTo(programInstructions, instructionOffset);
 
-				for (var i = 0; i < compiledProgram.Instructions.Count; ++i)
+				for (var currentInstructionOffset = 0;
+					currentInstructionOffset < compiledProgram.Instructions.Count;
+					++currentInstructionOffset)
 				{
-					var instruction = compiledProgram.Instructions[i];
+					var instruction = compiledProgram.Instructions[currentInstructionOffset];
 
 					if (instruction.InstructionType == InstructionType.Literal)
 					{
-						programInstructions[instructionOffset + i] = new Instruction(
+						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + literalOffset);
 					}
 					else if (instruction.InstructionType == InstructionType.OutputValue ||
 						instruction.InstructionType == InstructionType.PushValue)
 					{
-						programInstructions[instructionOffset + i] = new Instruction(
+						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + identifierOffset);
 					}
@@ -62,7 +71,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						instruction.InstructionType == InstructionType.BranchIfTruthy ||
 						instruction.InstructionType == InstructionType.Loop)
 					{
-						programInstructions[instructionOffset + i] = new Instruction(
+						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,
 							instruction.Parameter + instructionOffset);
 					}
@@ -78,13 +87,49 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							throw new TemplateNotFound(templateFileName);
 						}
 
-						programInstructions[instructionOffset + i] = new Instruction(
+						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,
 							entryPoint);
 					}
+					else if (instruction.InstructionType == InstructionType.PushReplacements)
+					{
+						var templatePath =
+							compiledProgram.TemplatePaths[compiledProgram.Instructions[currentInstructionOffset + 1]
+								.Parameter];
+
+						var templateFileName = Linker.ResolvePath(
+							Path.Combine(Path.GetDirectoryName(currentPath)!, templatePath));
+
+						if (!replacementPlaceholders.TryGetValue(templateFileName, out var placeholders))
+						{
+							throw new TemplateNotFound(templateFileName);
+						}
+
+						var replacementsArray = new Replacement[placeholders.Count];
+
+						var currentReplacements = compiledProgram.Replacements[instruction.Parameter];
+
+						foreach ((var replacementName, var replacementOffset) in placeholders)
+						{
+							var replacementSupplied = currentReplacements.TryGetValue(
+								replacementName,
+								out var replacementEntryPoint);
+
+							replacementsArray[replacementOffset] = new Replacement(
+								replacementSupplied,
+								instructionOffset + replacementEntryPoint);
+						}
+
+						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
+							instruction.InstructionType,
+							instruction.Parameter + replacementsOffset);
+
+						replacements[replacementsOffset++] = replacementsArray;
+					}
 					else
 					{
-						programInstructions[instructionOffset + i] = compiledProgram.Instructions[i];
+						programInstructions[instructionOffset + currentInstructionOffset] =
+							compiledProgram.Instructions[currentInstructionOffset];
 					}
 				}
 
@@ -100,7 +145,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				identifierOffset += compiledProgram.Identifiers.Count;
 			}
 
-			return (new ViewProgram(programInstructions, programLiterals, programIdentifiers),
+			return (new ViewProgram(programInstructions, programLiterals, programIdentifiers, replacements),
 				new ReadOnlyDictionary<string, int>(entryPoints));
 		}
 

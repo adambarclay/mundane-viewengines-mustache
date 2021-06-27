@@ -6,14 +6,17 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 		CloseBlock,
 		CloseTag,
 		End,
-		Epsilon,
 		Identifier,
 		InvertedBlock,
+		LayoutBlock,
 		OpenBlock,
 		OpenTag,
 		Partial,
 		Program,
 		Raw,
+		Replacement,
+		ReplacementBlock,
+		Section,
 		Text
 	}
 }

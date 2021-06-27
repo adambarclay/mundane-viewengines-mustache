@@ -1,0 +1,10 @@
+﻿{{< Layout.html }}
+	{{ $Title }}List{{ /Title }}
+	{{ $Body }}
+	<ul>
+		{{ #Items }}
+		<li>Item {{ . }}</li>
+		{{ /Items }}
+	</ul>
+	{{ /Body }}
+{{/ Layout.html }}

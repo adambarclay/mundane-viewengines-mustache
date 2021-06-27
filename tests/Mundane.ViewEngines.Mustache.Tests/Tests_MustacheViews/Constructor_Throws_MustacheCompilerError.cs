@@ -16,7 +16,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/InvertedBlockIdentifiers")));
 
 			Assert.Equal(
-				"/InvertedBlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
+				"/InvertedBlockIdentifiers.html Ln 7 Ch 43: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
 				exception.Message);
 		}
 
@@ -28,7 +28,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/BlockIdentifiers")));
 
 			Assert.Equal(
-				"/BlockIdentifiers.html Ln 6 Ch 42: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
+				"/BlockIdentifiers.html Ln 7 Ch 43: Block closing tag {{/WrongIdentifier}} does not correspond to opening tag {{BlockCondition}}.",
 				exception.Message);
 		}
 
@@ -39,7 +39,19 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingOpeningBlock")));
 
-			Assert.Equal("/MissingOpeningBlock.html Ln 6 Ch 40: Unexpected token \"{{/\".", exception.Message);
+			Assert.Equal("/MissingOpeningBlock.html Ln 7 Ch 41: Unexpected token \"{{/\".", exception.Message);
+		}
+
+		[Fact]
+		public static void When_A_Layout_Block_Contains_Non_Whitespace_Text()
+		{
+			var exception = Assert.ThrowsAny<MustacheCompilerError>(
+				() => new MustacheViews(
+					new ManifestEmbeddedFileProvider(
+						typeof(Helper).Assembly,
+						"/Errors/NonWhitespaceTextInLayoutBlock")));
+
+			Assert.Equal("/NonWhitespaceTextInLayoutBlock.html Ln 2 Ch 2: {{$ expected.", exception.Message);
 		}
 
 		[Fact]
@@ -50,7 +62,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/NestedBlockIdentifiers")));
 
 			Assert.Equal(
-				"/NestedBlockIdentifiers.html Ln 6 Ch 62: Block closing tag {{/BlockCondition}} does not correspond to opening tag {{WrongIdentifier}}.",
+				"/NestedBlockIdentifiers.html Ln 7 Ch 63: Block closing tag {{/BlockCondition}} does not correspond to opening tag {{WrongIdentifier}}.",
 				exception.Message);
 		}
 
@@ -61,7 +73,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingCloseBrace")));
 
-			Assert.Equal("/MissingCloseBrace.html Ln 3 Ch 18: }} expected.", exception.Message);
+			Assert.Equal("/MissingCloseBrace.html Ln 4 Ch 19: }} expected.", exception.Message);
 		}
 
 		[Fact]
@@ -71,7 +83,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/MissingIdentifier")));
 
-			Assert.Equal("/MissingIdentifier.html Ln 3 Ch 13: identifier expected.", exception.Message);
+			Assert.Equal("/MissingIdentifier.html Ln 4 Ch 14: identifier expected.", exception.Message);
 		}
 
 		[Fact]
@@ -81,7 +93,7 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(
 					new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors/TooManyIdentifiers")));
 
-			Assert.Equal("/TooManyIdentifiers.html Ln 3 Ch 24: }} expected.", exception.Message);
+			Assert.Equal("/TooManyIdentifiers.html Ln 4 Ch 25: }} expected.", exception.Message);
 		}
 
 		[Fact]
@@ -91,32 +103,32 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViews
 				() => new MustacheViews(new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Errors")));
 
 			Assert.Contains(
-				"LineNumberReporting/Linux/Linux.dat Ln 3 Ch 18: }} expected.",
+				"LineNumberReporting/Linux/Linux.dat Ln 4 Ch 19: }} expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 
 			Assert.Contains(
-				"LineNumberReporting/Mac/Mac.dat Ln 3 Ch 18: }} expected.",
+				"LineNumberReporting/Mac/Mac.dat Ln 4 Ch 19: }} expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 
 			Assert.Contains(
-				"LineNumberReporting/Windows/Windows.dat Ln 3 Ch 18: }} expected.",
+				"LineNumberReporting/Windows/Windows.dat Ln 4 Ch 19: }} expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 
 			Assert.Contains(
-				"MissingCloseBrace/MissingCloseBrace.html Ln 3 Ch 18: }} expected.",
+				"MissingCloseBrace/MissingCloseBrace.html Ln 4 Ch 19: }} expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 
 			Assert.Contains(
-				"MissingIdentifier/MissingIdentifier.html Ln 3 Ch 13: identifier expected.",
+				"MissingIdentifier/MissingIdentifier.html Ln 4 Ch 14: identifier expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 
 			Assert.Contains(
-				"TooManyIdentifiers/TooManyIdentifiers.html Ln 3 Ch 24: }} expected.",
+				"TooManyIdentifiers/TooManyIdentifiers.html Ln 4 Ch 25: }} expected.",
 				exception.Message,
 				StringComparison.Ordinal);
 		}

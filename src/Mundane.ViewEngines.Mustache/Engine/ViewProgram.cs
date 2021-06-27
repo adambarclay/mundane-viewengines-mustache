@@ -16,12 +16,18 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		private readonly string[][] identifiers;
 		private readonly Instruction[] instructions;
 		private readonly byte[][] literals;
+		private readonly Replacement[][] replacements;
 
-		internal ViewProgram(Instruction[] instructions, byte[][] literals, string[][] identifiers)
+		internal ViewProgram(
+			Instruction[] instructions,
+			byte[][] literals,
+			string[][] identifiers,
+			Replacement[][] replacements)
 		{
 			this.instructions = instructions;
 			this.literals = literals;
 			this.identifiers = identifiers;
+			this.replacements = replacements;
 		}
 
 		internal async ValueTask Execute<T>(Stream outputStream, int entryPoint, T viewModel)
@@ -32,6 +38,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 			var objectStack = new Stack<object?>();
 			var enumeratorStack = new Stack<IEnumerator>();
+			var replacementsStack = new Stack<Replacement[]>();
 
 			programStack[stackCounter] = entryPoint;
 
@@ -138,6 +145,38 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					case InstructionType.Call:
 					{
 						programStack[++stackCounter] = instruction.Parameter;
+
+						break;
+					}
+
+					case InstructionType.CallReplacement:
+					{
+						var replacement = replacementsStack.Peek()[instruction.Parameter];
+
+						if (replacement.ReplacementSupplied)
+						{
+							objectStack.Push(true);
+
+							programStack[++stackCounter] = replacement.ReplacementEntryPoint;
+						}
+						else
+						{
+							objectStack.Push(false);
+						}
+
+						break;
+					}
+
+					case InstructionType.PushReplacements:
+					{
+						replacementsStack.Push(this.replacements[instruction.Parameter]);
+
+						break;
+					}
+
+					case InstructionType.PopReplacements:
+					{
+						replacementsStack.Pop();
 
 						break;
 					}

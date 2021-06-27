@@ -7,19 +7,17 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 {
 	internal sealed class LexicalAnalyser
 	{
+		private readonly LineCounter lineCounter;
 		private readonly List<string> literals;
 		private readonly StringBuilder stringBuilder;
 		private readonly List<Token> tokens;
-		private int currentColumn;
-		private int currentLine;
 
 		private LexicalAnalyser()
 		{
 			this.tokens = new List<Token>();
 			this.literals = new List<string>();
 			this.stringBuilder = new StringBuilder(1024);
-			this.currentLine = 0;
-			this.currentColumn = 0;
+			this.lineCounter = new LineCounter(0, 0);
 		}
 
 		private delegate LexerState LexerState(LexicalAnalyser state, char character);
@@ -39,7 +37,6 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var state = new LexicalAnalyser();
 
 			var characterOffset = 0;
-			var lastCharacter = '\0';
 
 			LexerState lexerState = LexicalAnalyser.Text;
 
@@ -49,25 +46,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 				lexerState = lexerState.Invoke(state, character);
 
-				if (character == '\r')
-				{
-					++state.currentLine;
-					state.currentColumn = 0;
-				}
-				else if (character == '\n')
-				{
-					if (lastCharacter != '\r')
-					{
-						++state.currentLine;
-						state.currentColumn = 0;
-					}
-				}
-				else
-				{
-					++state.currentColumn;
-				}
-
-				lastCharacter = character;
+				state.lineCounter.Advance(character);
 			}
 
 			if (state.stringBuilder.Length > 0)
@@ -75,7 +54,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				state.literals.Add(state.stringBuilder.ToString());
 			}
 
-			state.tokens.Add(new Token(TokenType.End, state.currentLine, state.currentColumn));
+			state.tokens.Add(new Token(TokenType.End, state.lineCounter));
 
 			return (state.tokens, state.literals);
 		}
@@ -90,7 +69,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 					state.stringBuilder.Clear();
 				}
 
-				state.tokens.Add(new Token(TokenType.CloseTag, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.CloseTag, state.lineCounter));
 
 				return LexicalAnalyser.Text;
 			}
@@ -116,7 +95,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 			if (state.stringBuilder.Length == 0)
 			{
-				state.tokens.Add(new Token(TokenType.Text, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
 			}
 
 			state.stringBuilder.Append('{');
@@ -134,40 +113,54 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 			if (character == '&')
 			{
-				state.tokens.Add(new Token(TokenType.Raw, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.Raw, state.lineCounter));
 
 				return LexicalAnalyser.IdentifierStart;
 			}
 
 			if (character == '>')
 			{
-				state.tokens.Add(new Token(TokenType.Partial, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.Partial, state.lineCounter));
 
 				return LexicalAnalyser.IdentifierStart;
 			}
 
 			if (character == '#')
 			{
-				state.tokens.Add(new Token(TokenType.OpenBlock, state.currentLine, state.currentColumn));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '/')
-			{
-				state.tokens.Add(new Token(TokenType.CloseBlock, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.OpenBlock, state.lineCounter));
 
 				return LexicalAnalyser.IdentifierStart;
 			}
 
 			if (character == '^')
 			{
-				state.tokens.Add(new Token(TokenType.InvertedBlock, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.InvertedBlock, state.lineCounter));
 
 				return LexicalAnalyser.IdentifierStart;
 			}
 
-			state.tokens.Add(new Token(TokenType.OpenTag, state.currentLine, state.currentColumn));
+			if (character == '$')
+			{
+				state.tokens.Add(new Token(TokenType.ReplacementBlock, state.lineCounter));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (character == '<')
+			{
+				state.tokens.Add(new Token(TokenType.LayoutBlock, state.lineCounter));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			if (character == '/')
+			{
+				state.tokens.Add(new Token(TokenType.CloseBlock, state.lineCounter));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
+			state.tokens.Add(new Token(TokenType.OpenTag, state.lineCounter));
 
 			return LexicalAnalyser.IdentifierStart(state, character);
 		}
@@ -207,7 +200,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				return LexicalAnalyser.BraceClose;
 			}
 
-			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
 			state.stringBuilder.Append(character);
 
 			return LexicalAnalyser.Identifier;
@@ -225,7 +218,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				return LexicalAnalyser.BraceClose;
 			}
 
-			state.tokens.Add(new Token(TokenType.Identifier, state.currentLine, state.currentColumn));
+			state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
 			state.stringBuilder.Append(character);
 
 			return LexicalAnalyser.Identifier;
@@ -240,7 +233,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 			if (state.stringBuilder.Length == 0)
 			{
-				state.tokens.Add(new Token(TokenType.Text, state.currentLine, state.currentColumn));
+				state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
 			}
 
 			state.stringBuilder.Append(character);

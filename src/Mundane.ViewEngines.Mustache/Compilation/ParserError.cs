@@ -13,7 +13,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 		internal ParserError(string filePath, Token token, string message)
 		{
-			this.ErrorMessage = $"{filePath} Ln {token.Line} Ch {token.Character}: " + message;
+			this.ErrorMessage = $"{filePath} Ln {token.Line + 1} Ch {token.Character + 1}: " + message;
 		}
 
 		private static string TokenString(Token token, TokenType tokenType)
@@ -26,7 +26,8 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				{ TokenType.InvertedBlock, "{{^" },
 				{ TokenType.OpenBlock, "{{#" },
 				{ TokenType.OpenTag, "{{" },
-				{ TokenType.Text, "text" }
+				{ TokenType.Text, "text" },
+				{ TokenType.Replacement, "{{$" }
 			};
 
 			if (tokenType == TokenType.End)

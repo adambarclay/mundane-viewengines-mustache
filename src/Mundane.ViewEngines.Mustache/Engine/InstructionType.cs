@@ -5,10 +5,13 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		BranchIfFalsy,
 		BranchIfTruthy,
 		Call,
+		CallReplacement,
 		Literal,
 		Loop,
 		OutputValue,
 		OutputValueRaw,
+		PopReplacements,
+		PushReplacements,
 		PushValue,
 		Return
 	}
