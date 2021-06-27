@@ -254,13 +254,11 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 			while (count < text.Length)
 			{
-				var character = text[count];
+				var character = text[count++];
 
 				if (char.IsWhiteSpace(character))
 				{
 					lineCounter.Advance(character);
-
-					++count;
 				}
 				else
 				{
