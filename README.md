@@ -1,6 +1,8 @@
+<img align="left" width="116" src="https://raw.githubusercontent.com/adambarclay/mundane-viewengines-mustache/main/build/Mundane.png"/>
+
 # Mundane.ViewEngines.Mustache
 
-[![License: MIT](https://img.shields.io/github/license/adambarclay/mundane-viewengines-mustache?color=blue)](https://github.com/adambarclay/mundane-viewengines-mustache/blob/main/LICENSE) [![build](https://img.shields.io/github/workflow/status/adambarclay/mundane-viewengines-mustache/Build/main)](https://github.com/adambarclay/mundane-viewengines-mustache/actions?query=workflow%3ABuild+branch%3Amain) [![coverage](https://img.shields.io/codecov/c/github/adambarclay/mundane-viewengines-mustache/main)](https://codecov.io/gh/adambarclay/mundane-viewengines-mustache/branch/main)
+[![License: MIT](https://img.shields.io/github/license/adambarclay/mundane-viewengines-mustache?color=blue)](https://github.com/adambarclay/mundane-viewengines-mustache/blob/main/LICENSE) [![nuget](https://img.shields.io/nuget/v/Mundane.ViewEngines.Mustache)](https://www.nuget.org/packages/Mundane.ViewEngines.Mustache/) [![build](https://img.shields.io/github/workflow/status/adambarclay/mundane-viewengines-mustache/Build/main)](https://github.com/adambarclay/mundane-viewengines-mustache/actions?query=workflow%3ABuild+branch%3Amain) [![coverage](https://img.shields.io/codecov/c/github/adambarclay/mundane-viewengines-mustache/main)](https://codecov.io/gh/adambarclay/mundane-viewengines-mustache/branch/main)
 
 Mundane is a lightweight "no magic" web framework for .NET.
 
