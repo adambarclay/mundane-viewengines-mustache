@@ -11,13 +11,14 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			 3. P ::= {{ id }} P
 			 4. P ::= {{& id }} P
 			 5. P ::= {{> id }} P
-			 6. P ::= {{# B
-			 7. P ::= {{^ B
-			 8. P ::= {{$ B
-			 9. P ::= {{< id }} R {{/ id }} P
-			10. B ::= id }} P {{/ id }} P
-			11. R ::= {{$ id }} P {{/ id }} R
-			12. R ::= ε
+			 6. P ::= {{~ id }} P
+			 7. P ::= {{# B
+			 8. P ::= {{^ B
+			 9. P ::= {{$ B
+			10. P ::= {{< id }} R {{/ id }} P
+			11. B ::= id }} P {{/ id }} P
+			12. R ::= {{$ id }} P {{/ id }} R
+			13. R ::= ε
 		*/
 		private static readonly Dictionary<TokenType, Dictionary<TokenType, int>> ParsingTable =
 			new Dictionary<TokenType, Dictionary<TokenType, int>>
@@ -31,17 +32,18 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						{ TokenType.OpenTag, 3 },
 						{ TokenType.Raw, 4 },
 						{ TokenType.Partial, 5 },
-						{ TokenType.OpenBlock, 6 },
-						{ TokenType.InvertedBlock, 7 },
-						{ TokenType.ReplacementBlock, 8 },
-						{ TokenType.LayoutBlock, 9 }
+						{ TokenType.Url, 6 },
+						{ TokenType.OpenBlock, 7 },
+						{ TokenType.InvertedBlock, 8 },
+						{ TokenType.ReplacementBlock, 9 },
+						{ TokenType.LayoutBlock, 10 }
 					}
 				},
-				{ TokenType.Block, new Dictionary<TokenType, int> { { TokenType.Identifier, 10 } } },
+				{ TokenType.Block, new Dictionary<TokenType, int> { { TokenType.Identifier, 11 } } },
 				{
 					TokenType.Replacement, new Dictionary<TokenType, int>
 					{
-						{ TokenType.ReplacementBlock, 11 },
+						{ TokenType.ReplacementBlock, 12 },
 						{ TokenType.CloseBlock, 1 },
 						{ TokenType.Text, 0 } // Ignore whitespace in the layout block
 					}
@@ -174,8 +176,9 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 						case 6:
 						{
-							tokenStack.Push(TokenType.Block);
-							tokenStack.Push(TokenType.OpenBlock);
+							tokenStack.Push(TokenType.CloseTag);
+							tokenStack.Push(TokenType.Identifier);
+							tokenStack.Push(TokenType.Url);
 
 							break;
 						}
@@ -183,7 +186,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						case 7:
 						{
 							tokenStack.Push(TokenType.Block);
-							tokenStack.Push(TokenType.InvertedBlock);
+							tokenStack.Push(TokenType.OpenBlock);
 
 							break;
 						}
@@ -191,12 +194,20 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						case 8:
 						{
 							tokenStack.Push(TokenType.Block);
-							tokenStack.Push(TokenType.ReplacementBlock);
+							tokenStack.Push(TokenType.InvertedBlock);
 
 							break;
 						}
 
 						case 9:
+						{
+							tokenStack.Push(TokenType.Block);
+							tokenStack.Push(TokenType.ReplacementBlock);
+
+							break;
+						}
+
+						case 10:
 						{
 							tokenStack.Push(TokenType.CloseTag);
 							tokenStack.Push(TokenType.Identifier);
@@ -209,7 +220,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							break;
 						}
 
-						case 10:
+						case 11:
 						{
 							tokenStack.Pop();
 
@@ -223,7 +234,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							break;
 						}
 
-						case 11:
+						case 12:
 						{
 							tokenStack.Push(TokenType.CloseTag);
 							tokenStack.Push(TokenType.Identifier);

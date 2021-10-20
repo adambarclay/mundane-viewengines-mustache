@@ -29,7 +29,11 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(responseStream.Stream, templatePath, MustacheViewEngine.NoModel);
+				await mustacheViews.Execute(
+					responseStream.Stream,
+					responseStream.Request.PathBase,
+					templatePath,
+					MustacheViewEngine.NoModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -69,7 +73,11 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(responseStream.Stream, templatePath, viewModel);
+				await mustacheViews.Execute(
+					responseStream.Stream,
+					responseStream.Request.PathBase,
+					templatePath,
+					viewModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -106,7 +114,11 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(responseStream.Stream, templatePath, MustacheViewEngine.NoModel);
+				await mustacheViews.Execute(
+					responseStream.Stream,
+					responseStream.Request.PathBase,
+					templatePath,
+					MustacheViewEngine.NoModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -150,7 +162,11 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(responseStream.Stream, templatePath, viewModel);
+				await mustacheViews.Execute(
+					responseStream.Stream,
+					responseStream.Request.PathBase,
+					templatePath,
+					viewModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -192,7 +208,7 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(outputStream, templatePath, MustacheViewEngine.NoModel);
+				await mustacheViews.Execute(outputStream, string.Empty, templatePath, MustacheViewEngine.NoModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -241,7 +257,7 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				await mustacheViews.Execute(outputStream, templatePath, viewModel);
+				await mustacheViews.Execute(outputStream, string.Empty, templatePath, viewModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -278,6 +294,7 @@ namespace Mundane.ViewEngines.Mustache
 			{
 				result = await MustacheViewEngine.RenderToString(
 					mustacheViews,
+					string.Empty,
 					templatePath,
 					MustacheViewEngine.NoModel);
 			}
@@ -325,7 +342,7 @@ namespace Mundane.ViewEngines.Mustache
 
 			try
 			{
-				result = await MustacheViewEngine.RenderToString(mustacheViews, templatePath, viewModel);
+				result = await MustacheViewEngine.RenderToString(mustacheViews, string.Empty, templatePath, viewModel);
 			}
 			catch (TemplateNotFound exception)
 			{
@@ -341,12 +358,13 @@ namespace Mundane.ViewEngines.Mustache
 
 		private static async ValueTask<string> RenderToString(
 			MustacheViews mustacheViews,
+			string pathBase,
 			string templatePath,
 			object viewModel)
 		{
 			await using (var memoryStream = new MemoryStream())
 			{
-				await mustacheViews.Execute(memoryStream, templatePath, viewModel);
+				await mustacheViews.Execute(memoryStream, pathBase, templatePath, viewModel);
 
 				return Encoding.UTF8.GetString(memoryStream.ToArray());
 			}

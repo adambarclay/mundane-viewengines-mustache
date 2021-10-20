@@ -17,6 +17,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 		Replacement,
 		ReplacementBlock,
 		Section,
-		Text
+		Text,
+		Url
 	}
 }

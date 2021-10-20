@@ -170,6 +170,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 							identifiers.Add(scannedliterals[scannedLiteralOffset++].Split('.'));
 						}
+						else if (identifierType == TokenType.Url)
+						{
+							instructions[instructionsOffset]
+								.Add(new Instruction(InstructionType.ResolveUrl, identifiers.Count));
+
+							identifiers.Add(new[] { scannedliterals[scannedLiteralOffset++] });
+						}
 						else
 						{
 							instructions[instructionsOffset]
@@ -193,6 +200,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 					case TokenType.Partial:
 					{
 						identifierType = TokenType.Partial;
+
+						break;
+					}
+
+					case TokenType.Url:
+					{
+						identifierType = TokenType.Url;
 
 						break;
 					}

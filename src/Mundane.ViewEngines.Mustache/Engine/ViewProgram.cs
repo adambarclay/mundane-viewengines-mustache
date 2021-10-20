@@ -30,7 +30,12 @@ namespace Mundane.ViewEngines.Mustache.Engine
 			this.replacements = replacements;
 		}
 
-		internal async ValueTask Execute(Stream outputStream, int entryPoint, object viewModel)
+		internal async ValueTask Execute(
+			Stream outputStream,
+			UrlResolver urlResolver,
+			string pathBase,
+			int entryPoint,
+			object viewModel)
 		{
 			var programStack = new int[128];
 			var stackCounter = 0;
@@ -176,6 +181,14 @@ namespace Mundane.ViewEngines.Mustache.Engine
 					case InstructionType.PopReplacements:
 					{
 						replacementsStack.Pop();
+
+						break;
+					}
+
+					case InstructionType.ResolveUrl:
+					{
+						await outputStream.WriteAsync(
+							Encoding.UTF8.GetBytes(urlResolver(pathBase, this.identifiers[instruction.Parameter][0])));
 
 						break;
 					}

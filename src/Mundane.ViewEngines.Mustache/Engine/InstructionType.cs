@@ -13,6 +13,7 @@ namespace Mundane.ViewEngines.Mustache.Engine
 		PopReplacements,
 		PushReplacements,
 		PushValue,
+		ResolveUrl,
 		Return
 	}
 }

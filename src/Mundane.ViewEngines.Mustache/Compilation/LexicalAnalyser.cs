@@ -150,6 +150,13 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				return LexicalAnalyser.IdentifierStart;
 			}
 
+			if (character == '~')
+			{
+				state.tokens.Add(new Token(TokenType.Url, state.lineCounter));
+
+				return LexicalAnalyser.IdentifierStart;
+			}
+
 			if (character == '#')
 			{
 				state.tokens.Add(new Token(TokenType.OpenBlock, state.lineCounter));

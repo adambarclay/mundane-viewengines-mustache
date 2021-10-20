@@ -22,7 +22,8 @@ For example in ASP.NET:
             new Dependency<Configuration>(new Configuration(env)),
             new Dependency<DataRepository>(request => new DataRepositorySqlServer(
                 request.Dependency<Configuration>().ConnectionString)),
-            new MustacheViews(new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Views")));
+            new Dependency<MustacheViews>(new MustacheViews(
+                new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Views")))));
 
         var routing = new Routing(
             routeConfiguration =>
@@ -151,6 +152,18 @@ Comments are specified with `{{! This is a comment. }}`. Everything between the 
 ### Partials
 
 Partials are specified with `{{> mypartial.html }}`. The contents of `mypartial.html` will be output in place of the tag, and will inherit the current view model context.
+
+### URLs
+
+URLs can be transformed in the template by using `{{~ /some-url }}`, for example by adding the base path of the application (e.g. `/my-app/some-url`).
+
+The URL resolver is optionally passed to the `MustacheViews` constructor, and has the signature `string UrlResolver(string pathBase, string url)`, e.g.
+
+```c#
+new MustacheViews(fileProvider, (pathBase, url) => pathBase + TransformUrl(url))
+```
+
+If no URL resolver is specified, the default is `(pathBase, url) => pathBase + url`.
 
 ### Layout
 

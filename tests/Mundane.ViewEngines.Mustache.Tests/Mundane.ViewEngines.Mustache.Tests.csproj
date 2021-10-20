@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -28,6 +28,10 @@
 		<None Remove="Results\Raw\Raw.html"/>
 		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
 		<None Remove="Results\SimpleSubstitutions\SingleNoOutput.html"/>
+		<None Remove="Results\Url\Url.html"/>
+		<None Remove="Results\Url\UrlNoBase.html"/>
+		<None Remove="Results\Url\UrlTransformed.html"/>
+		<None Remove="Results\Url\UrlTransformedNoBase.html"/>
 		<None Remove="Templates\Block\Nested\Nested.html"/>
 		<None Remove="Templates\Block\OutputCurrent\OutputCurrent.html"/>
 		<None Remove="Templates\Block\Simple\Inverted.html"/>
@@ -50,6 +54,7 @@
 		<None Remove="Templates\SimpleSubstitutions\BraceCloseInIdentifier.html"/>
 		<None Remove="Templates\SimpleSubstitutions\BraceOpenInText\BraceOpenInText.html"/>
 		<None Remove="Templates\SimpleSubstitutions\Single\Single.html"/>
+		<None Remove="Templates\Url\Url.html"/>
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Errors\MissingOpeningBlock\MissingOpeningBlock.html"/>
@@ -80,6 +85,10 @@
 		<EmbeddedResource Include="Results\SimpleSubstitutions\SimpleSubstitutions.html"/>
 		<EmbeddedResource Include="Errors\MissingCloseBrace\MissingCloseBrace.html"/>
 		<EmbeddedResource Include="Results\Block\NoBlock.html"/>
+		<EmbeddedResource Include="Results\Url\UrlTransformedNoBase.html"/>
+		<EmbeddedResource Include="Results\Url\UrlTransformed.html"/>
+		<EmbeddedResource Include="Results\Url\UrlNoBase.html"/>
+		<EmbeddedResource Include="Results\Url\Url.html"/>
 		<EmbeddedResource Include="Templates\Block\Inverted\Inverted.html"/>
 		<EmbeddedResource Include="Templates\Block\Nested\Nested.html"/>
 		<EmbeddedResource Include="Templates\Block\OutputCurrent\OutputCurrent.html"/>
@@ -103,16 +112,17 @@
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\BraceCloseInIdentifier\BraceCloseInIdentifier.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\Single\Single.html"/>
 		<EmbeddedResource Include="Templates\SimpleSubstitutions\WhitespaceVariations\WhitespaceVariations.html"/>
+		<EmbeddedResource Include="Templates\Url\Url.html"/>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="3.0.3">
+		<PackageReference Include="coverlet.collector" Version="3.1.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.7"/>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0"/>
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.11"/>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"/>
 		<PackageReference Include="Moq" Version="4.16.1"/>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.354">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

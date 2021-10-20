@@ -12,6 +12,7 @@ namespace Mundane.ViewEngines.Mustache
 	public sealed class MustacheViews
 	{
 		private readonly ReadOnlyDictionary<string, int> entryPoints;
+		private readonly UrlResolver urlResolver;
 		private readonly ViewProgram viewProgram;
 
 		/// <summary>Initializes a new instance of the <see cref="MustacheViews"/> class.</summary>
@@ -19,11 +20,28 @@ namespace Mundane.ViewEngines.Mustache
 		/// <exception cref="ArgumentNullException"><paramref name="viewFileProvider"/> is <see langword="null"/>.</exception>
 		/// <exception cref="MustacheCompilerError">An error is discovered during view compilation.</exception>
 		public MustacheViews(IFileProvider viewFileProvider)
+			: this(viewFileProvider, (pathBase, url) => pathBase + url)
+		{
+		}
+
+		/// <summary>Initializes a new instance of the <see cref="MustacheViews"/> class.</summary>
+		/// <param name="viewFileProvider">The view template file provider.</param>
+		/// <param name="urlResolver">Resolves URLs when specified in URL tags e.g. {{~ /some-url }}.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="viewFileProvider"/> is <see langword="null"/>.</exception>
+		/// <exception cref="MustacheCompilerError">An error is discovered during view compilation.</exception>
+		public MustacheViews(IFileProvider viewFileProvider, UrlResolver urlResolver)
 		{
 			if (viewFileProvider is null)
 			{
 				throw new ArgumentNullException(nameof(viewFileProvider));
 			}
+
+			if (urlResolver is null)
+			{
+				throw new ArgumentNullException(nameof(urlResolver));
+			}
+
+			this.urlResolver = urlResolver;
 
 			try
 			{
@@ -39,11 +57,11 @@ namespace Mundane.ViewEngines.Mustache
 			}
 		}
 
-		internal async Task Execute(Stream outputStream, string templatePath, object viewModel)
+		internal async Task Execute(Stream outputStream, string pathBase, string templatePath, object viewModel)
 		{
 			if (this.entryPoints.TryGetValue(MustacheViews.NormalisePath(templatePath), out var entryPoint))
 			{
-				await this.viewProgram.Execute(outputStream, entryPoint, viewModel);
+				await this.viewProgram.Execute(outputStream, this.urlResolver, pathBase, entryPoint, viewModel);
 			}
 			else
 			{

@@ -35,16 +35,24 @@ namespace Mundane.ViewEngines.Mustache.Tests
 			}
 		}
 
-		internal static ValueTask<string> Run(MustacheViews views, BodyWriter bodyWriter)
+		internal static ValueTask<string> Run(MustacheViews views, BodyWriter bodyWriter, string pathBase)
 		{
-			return Helper.Run(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter);
+			return Helper.Run(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter, pathBase);
 		}
 
-		internal static async ValueTask<string> Run(DependencyFinder dependencyFinder, BodyWriter bodyWriter)
+		internal static ValueTask<string> Run(DependencyFinder dependencyFinder, BodyWriter bodyWriter)
+		{
+			return Helper.Run(dependencyFinder, bodyWriter, string.Empty);
+		}
+
+		internal static async ValueTask<string> Run(
+			DependencyFinder dependencyFinder,
+			BodyWriter bodyWriter,
+			string pathBase)
 		{
 			var response = await MundaneEngine.ExecuteRequest(
 				MundaneEndpointFactory.Create(() => Response.Ok(bodyWriter)),
-				new FakeRequest(dependencyFinder));
+				new FakeRequest(dependencyFinder, pathBase));
 
 			await using (var stream = new MemoryStream())
 			{
@@ -58,9 +66,10 @@ namespace Mundane.ViewEngines.Mustache.Tests
 		{
 			private readonly DependencyFinder dependencyFinder;
 
-			internal FakeRequest(DependencyFinder dependencyFinder)
+			internal FakeRequest(DependencyFinder dependencyFinder, string pathBase)
 			{
 				this.dependencyFinder = dependencyFinder;
+				this.PathBase = pathBase;
 			}
 
 			public EnumerableCollection<KeyValuePair<string, string>> AllCookies
@@ -140,13 +149,7 @@ namespace Mundane.ViewEngines.Mustache.Tests
 				}
 			}
 
-			public string PathBase
-			{
-				get
-				{
-					return string.Empty;
-				}
-			}
+			public string PathBase { get; }
 
 			public CancellationToken RequestAborted
 			{
