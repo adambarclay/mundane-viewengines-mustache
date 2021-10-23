@@ -61,7 +61,9 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 							instruction.Parameter + literalOffset);
 					}
 					else if (instruction.InstructionType == InstructionType.OutputValue ||
-						instruction.InstructionType == InstructionType.PushValue)
+						instruction.InstructionType == InstructionType.OutputValueRaw ||
+						instruction.InstructionType == InstructionType.PushValue ||
+						instruction.InstructionType == InstructionType.ResolveUrl)
 					{
 						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,

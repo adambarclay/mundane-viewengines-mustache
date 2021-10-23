@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+	<head>
+		<title>{{ $Blah }}Default Title{{ /Blah }}{{! This is a comment }}</title>
+	</head>
+	<body>
+		{{ ^BlockCondition }}<p>{{ One }}</p>{{ /BlockCondition }}
+		{{ #BlockCondition }}
+		<p>{{ Two }}</p>
+		{{ #NestedCondition }}<p>{{ Three }}</p>{{ /NestedCondition }}
+		{{ /BlockCondition }}
+		{{ #BlockCondition }}<p>{{ . }}</p>{{ /BlockCondition }}
+		{{ #BlockCondition }}<p>{{ Four }}</p>{{ /BlockCondition }}
+		{{ ~/dummy-url }}
+	</body>
+</html>

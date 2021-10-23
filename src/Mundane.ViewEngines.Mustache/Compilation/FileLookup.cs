@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.FileProviders;
 
 namespace Mundane.ViewEngines.Mustache.Compilation
@@ -17,7 +18,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 		private static void GetFiles(IFileProvider fileProvider, string path, List<(string Path, IFileInfo File)> files)
 		{
-			foreach (var content in fileProvider.GetDirectoryContents(path)!)
+			foreach (var content in fileProvider.GetDirectoryContents(path)!.OrderBy(o => o.IsDirectory + o.Name))
 			{
 				if (content.IsDirectory)
 				{
