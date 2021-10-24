@@ -115,10 +115,10 @@ namespace Mundane.ViewEngines.Mustache.Engine
 
 					case InstructionType.BranchIfTruthy:
 					{
-						if (!ViewProgram.Falsy(objectStack.Peek(), out var _))
-						{
-							objectStack.Pop();
+						var topOfStack = objectStack.Pop();
 
+						if (!ViewProgram.Falsy(topOfStack, out var _))
+						{
 							programStack[stackCounter] = instruction.Parameter;
 						}
 

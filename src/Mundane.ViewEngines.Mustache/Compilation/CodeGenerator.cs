@@ -7,7 +7,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 	{
 		internal static CompiledProgram GenerateCode(List<Token> tokens, List<string> scannedliterals)
 		{
-			var instructions = new[] { new List<Instruction>(), new List<Instruction>() };
+			var instructions = new List<List<Instruction>> { new List<Instruction>() };
 			var instructionsOffset = 0;
 
 			var literals = new List<string>();
@@ -81,7 +81,12 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						{
 							blockStack.Push((TokenType.ReplacementBlock, instructions[instructionsOffset].Count));
 
-							instructionsOffset = 1;
+							++instructionsOffset;
+
+							if (instructions.Count == instructionsOffset)
+							{
+								instructions.Add(new List<Instruction>());
+							}
 
 							replacements[^1]
 								.Add(scannedliterals[scannedLiteralOffset++], instructions[instructionsOffset].Count);
@@ -90,15 +95,18 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						}
 						else
 						{
-							instructions[instructionsOffset]
-								.Add(new Instruction(InstructionType.CallReplacement, replacementPlaceholders.Count));
-
 							if (!replacementPlaceholders.ContainsKey(scannedliterals[scannedLiteralOffset]))
 							{
 								replacementPlaceholders.Add(
 									scannedliterals[scannedLiteralOffset],
 									replacementPlaceholders.Count);
 							}
+
+							instructions[instructionsOffset]
+								.Add(
+									new Instruction(
+										InstructionType.CallReplacement,
+										replacementPlaceholders[scannedliterals[scannedLiteralOffset]]));
 
 							blockStack.Push((TokenType.ReplacementBlock, instructions[instructionsOffset].Count));
 
@@ -126,7 +134,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						{
 							instructions[instructionsOffset].Add(new Instruction(InstructionType.Return, 0));
 
-							instructionsOffset = 0;
+							--instructionsOffset;
 						}
 						else if (blockType == TokenType.LayoutBlock)
 						{
@@ -220,17 +228,37 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 				}
 			}
 
-			var mainInstructionCount = instructions[0].Count;
+			var instructionOffset = 0;
 
-			foreach (var replacementSet in replacements)
+			for (var i = 1; i < instructions.Count; ++i)
 			{
-				foreach (var key in replacementSet.Keys)
+				var previousOffset = i - 1;
+
+				instructionOffset += instructions[previousOffset].Count;
+
+				foreach (var instruction in instructions[i])
 				{
-					replacementSet[key] += mainInstructionCount;
+					if (instruction.InstructionType == InstructionType.BranchIfFalsy ||
+						instruction.InstructionType == InstructionType.BranchIfTruthy ||
+						instruction.InstructionType == InstructionType.Loop)
+					{
+						instructions[0]
+							.Add(
+								new Instruction(
+									instruction.InstructionType,
+									instruction.Parameter + instructionOffset));
+					}
+					else
+					{
+						instructions[0].Add(instruction);
+					}
+				}
+
+				foreach (var key in replacements[previousOffset].Keys)
+				{
+					replacements[previousOffset][key] += instructionOffset;
 				}
 			}
-
-			instructions[0].AddRange(instructions[1]);
 
 			return new CompiledProgram(
 				instructions[0],

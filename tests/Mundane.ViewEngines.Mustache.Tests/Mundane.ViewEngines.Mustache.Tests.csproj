@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -24,6 +24,8 @@
 		<None Remove="Results\Layout\LayoutWithDefaults.html"/>
 		<None Remove="Results\Layout\LayoutWithEnumerator.html"/>
 		<None Remove="Results\Layout\LayoutWithExtraText.html"/>
+		<None Remove="Results\Layout\LayoutWithNestedLayout.html"/>
+		<None Remove="Results\Layout\LayoutWithNestedLayoutDefaults.html"/>
 		<None Remove="Results\Layout\LayoutWithSomeValues.html"/>
 		<None Remove="Results\Raw\Raw.html"/>
 		<None Remove="Results\SimpleSubstitutions\BraceOpenInText.html"/>
@@ -48,12 +50,16 @@
 		<None Remove="Templates\Comments\CommentsWithSingleCloseBrace.html"/>
 		<None Remove="Templates\Comments\_Dummy.html"/>
 		<None Remove="Templates\Layout\Layout.html"/>
+		<None Remove="Templates\Layout\LayoutInner.html"/>
 		<None Remove="Templates\Layout\LayoutWithAllValues.html"/>
 		<None Remove="Templates\Layout\LayoutWithDefaults.html"/>
 		<None Remove="Templates\Layout\LayoutWithEnumerator.html"/>
 		<None Remove="Templates\Layout\LayoutWithExtraText.html"/>
+		<None Remove="Templates\Layout\LayoutWithNestedLayout.html"/>
+		<None Remove="Templates\Layout\LayoutWithNestedLayoutDefaults.html"/>
 		<None Remove="Templates\Layout\LayoutWithSomeValues.html"/>
 		<None Remove="Templates\Layout\_Dummy.html"/>
+		<None Remove="Templates\Layout\_DummyLayout.html"/>
 		<None Remove="Templates\NoSubstitutions\_Dummy.html"/>
 		<None Remove="Templates\Partials\BlockPartial\_Dummy.html"/>
 		<None Remove="Templates\Partials\Partial.html"/>
@@ -92,6 +98,8 @@
 		<EmbeddedResource Include="Results\Comments\Comments.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithEnumerator.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithExtraText.html"/>
+		<EmbeddedResource Include="Results\Layout\LayoutWithNestedLayoutDefaults.html"/>
+		<EmbeddedResource Include="Results\Layout\LayoutWithNestedLayout.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithSomeValues.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithAllValues.html"/>
 		<EmbeddedResource Include="Results\Layout\LayoutWithDefaults.html"/>
@@ -120,12 +128,16 @@
 		<EmbeddedResource Include="Templates\Comments\Comments.html"/>
 		<EmbeddedResource Include="Templates\Comments\_Dummy.html"/>
 		<EmbeddedResource Include="Templates\Layout\Layout.html"/>
+		<EmbeddedResource Include="Templates\Layout\LayoutInner.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithAllValues.html"/>
-		<EmbeddedResource Include="Templates\Layout\LayoutWithExtraText.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithDefaults.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithEnumerator.html"/>
+		<EmbeddedResource Include="Templates\Layout\LayoutWithExtraText.html"/>
+		<EmbeddedResource Include="Templates\Layout\LayoutWithNestedLayout.html"/>
+		<EmbeddedResource Include="Templates\Layout\LayoutWithNestedLayoutDefaults.html"/>
 		<EmbeddedResource Include="Templates\Layout\LayoutWithSomeValues.html"/>
 		<EmbeddedResource Include="Templates\Layout\_Dummy.html"/>
+		<EmbeddedResource Include="Templates\Layout\_DummyLayout.html"/>
 		<EmbeddedResource Include="Templates\NoSubstitutions\NoSubstitutions.html"/>
 		<EmbeddedResource Include="Errors\MissingPartial\MissingPartial.html"/>
 		<EmbeddedResource Include="Templates\NoSubstitutions\_Dummy.html"/>

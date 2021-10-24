@@ -124,7 +124,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 
 						programInstructions[instructionOffset + currentInstructionOffset] = new Instruction(
 							instruction.InstructionType,
-							instruction.Parameter + replacementsOffset);
+							replacementsOffset);
 
 						replacements[replacementsOffset++] = replacementsArray;
 					}
