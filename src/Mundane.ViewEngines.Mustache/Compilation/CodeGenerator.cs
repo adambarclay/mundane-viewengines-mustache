@@ -17,6 +17,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 			var replacements = new List<Dictionary<string, int>>();
 
 			var blockStack = new Stack<(TokenType TokenType, int Parameter)>();
+			var replacementsStack = new Stack<Dictionary<string, int>>();
 			var scannedLiteralOffset = 0;
 			var identifierType = TokenType.Identifier;
 
@@ -66,7 +67,10 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						instructions[instructionsOffset]
 							.Add(new Instruction(InstructionType.Call, templatePaths.Count));
 
-						replacements.Add(new Dictionary<string, int>());
+						var newReplacements = new Dictionary<string, int>();
+
+						replacementsStack.Push(newReplacements);
+						replacements.Add(newReplacements);
 
 						templatePaths.Add(scannedliterals[scannedLiteralOffset++]);
 
@@ -88,7 +92,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 								instructions.Add(new List<Instruction>());
 							}
 
-							replacements[^1]
+							replacementsStack.Peek()
 								.Add(scannedliterals[scannedLiteralOffset++], instructions[instructionsOffset].Count);
 
 							++tokenOffset;
@@ -139,6 +143,7 @@ namespace Mundane.ViewEngines.Mustache.Compilation
 						else if (blockType == TokenType.LayoutBlock)
 						{
 							instructions[instructionsOffset].Add(new Instruction(InstructionType.PopReplacements, 0));
+							replacementsStack.Pop();
 						}
 						else
 						{
