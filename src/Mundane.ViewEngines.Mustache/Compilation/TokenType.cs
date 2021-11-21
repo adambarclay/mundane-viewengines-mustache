@@ -1,23 +1,22 @@
-namespace Mundane.ViewEngines.Mustache.Compilation
+namespace Mundane.ViewEngines.Mustache.Compilation;
+
+internal enum TokenType
 {
-	internal enum TokenType
-	{
-		Block,
-		CloseBlock,
-		CloseTag,
-		End,
-		Identifier,
-		InvertedBlock,
-		LayoutBlock,
-		OpenBlock,
-		OpenTag,
-		Partial,
-		Program,
-		Raw,
-		Replacement,
-		ReplacementBlock,
-		Section,
-		Text,
-		Url
-	}
+	Block,
+	CloseBlock,
+	CloseTag,
+	End,
+	Identifier,
+	InvertedBlock,
+	LayoutBlock,
+	OpenBlock,
+	OpenTag,
+	Partial,
+	Program,
+	Raw,
+	Replacement,
+	ReplacementBlock,
+	Section,
+	Text,
+	Url
 }

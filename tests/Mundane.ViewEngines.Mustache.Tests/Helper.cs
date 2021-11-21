@@ -7,226 +7,225 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 
-namespace Mundane.ViewEngines.Mustache.Tests
+namespace Mundane.ViewEngines.Mustache.Tests;
+
+[ExcludeFromCodeCoverage]
+internal static class Helper
 {
-	[ExcludeFromCodeCoverage]
-	internal static class Helper
+	internal static async ValueTask<string> Results(string templatePath)
 	{
-		internal static async ValueTask<string> Results(string templatePath)
-		{
-			var fileProvider = new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Results");
+		var fileProvider = new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Results");
 
-			await using (var file = fileProvider.GetFileInfo(templatePath)!.CreateReadStream()!)
+		await using (var file = fileProvider.GetFileInfo(templatePath).CreateReadStream()!)
+		{
+			using (var reader = new StreamReader(file, Encoding.UTF8))
 			{
-				using (var reader = new StreamReader(file, Encoding.UTF8))
-				{
-					return await reader.ReadToEndAsync();
-				}
+				return await reader.ReadToEndAsync();
+			}
+		}
+	}
+
+	internal static async ValueTask<string> Run(Func<Stream, ValueTask> func)
+	{
+		await using (var stream = new MemoryStream())
+		{
+			await func(stream);
+
+			return Encoding.UTF8.GetString(stream.ToArray());
+		}
+	}
+
+	internal static ValueTask<string> Run(MustacheViews views, BodyWriter bodyWriter, string pathBase)
+	{
+		return Helper.Run(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter, pathBase);
+	}
+
+	internal static ValueTask<string> Run(DependencyFinder dependencyFinder, BodyWriter bodyWriter)
+	{
+		return Helper.Run(dependencyFinder, bodyWriter, string.Empty);
+	}
+
+	internal static async ValueTask<string> Run(
+		DependencyFinder dependencyFinder,
+		BodyWriter bodyWriter,
+		string pathBase)
+	{
+		var response = await MundaneEngine.ExecuteRequest(
+			MundaneEndpointFactory.Create(() => Response.Ok(bodyWriter)),
+			new FakeRequest(dependencyFinder, pathBase));
+
+		await using (var stream = new MemoryStream())
+		{
+			await response.WriteBodyToStream(stream);
+
+			return Encoding.UTF8.GetString(stream.ToArray());
+		}
+	}
+
+	private sealed class FakeRequest : Request
+	{
+		private readonly DependencyFinder dependencyFinder;
+
+		internal FakeRequest(DependencyFinder dependencyFinder, string pathBase)
+		{
+			this.dependencyFinder = dependencyFinder;
+			this.PathBase = pathBase;
+		}
+
+		public EnumerableCollection<KeyValuePair<string, string>> AllCookies
+		{
+			get
+			{
+				return new EnumerableCollection<KeyValuePair<string, string>>(
+					new List<KeyValuePair<string, string>>(0));
 			}
 		}
 
-		internal static async ValueTask<string> Run(Func<Stream, ValueTask> func)
+		public EnumerableCollection<KeyValuePair<string, FileUpload>> AllFileParameters
 		{
-			await using (var stream = new MemoryStream())
+			get
 			{
-				await func(stream);
-
-				return Encoding.UTF8.GetString(stream.ToArray());
+				return new EnumerableCollection<KeyValuePair<string, FileUpload>>(
+					new List<KeyValuePair<string, FileUpload>>(0));
 			}
 		}
 
-		internal static ValueTask<string> Run(MustacheViews views, BodyWriter bodyWriter, string pathBase)
+		public EnumerableCollection<KeyValuePair<string, string>> AllFormParameters
 		{
-			return Helper.Run(new Dependencies(new Dependency<MustacheViews>(views)), bodyWriter, pathBase);
-		}
-
-		internal static ValueTask<string> Run(DependencyFinder dependencyFinder, BodyWriter bodyWriter)
-		{
-			return Helper.Run(dependencyFinder, bodyWriter, string.Empty);
-		}
-
-		internal static async ValueTask<string> Run(
-			DependencyFinder dependencyFinder,
-			BodyWriter bodyWriter,
-			string pathBase)
-		{
-			var response = await MundaneEngine.ExecuteRequest(
-				MundaneEndpointFactory.Create(() => Response.Ok(bodyWriter)),
-				new FakeRequest(dependencyFinder, pathBase));
-
-			await using (var stream = new MemoryStream())
+			get
 			{
-				await response.WriteBodyToStream(stream);
-
-				return Encoding.UTF8.GetString(stream.ToArray());
+				return new EnumerableCollection<KeyValuePair<string, string>>(
+					new List<KeyValuePair<string, string>>(0));
 			}
 		}
 
-		private sealed class FakeRequest : Request
+		public EnumerableCollection<KeyValuePair<string, string>> AllHeaders
 		{
-			private readonly DependencyFinder dependencyFinder;
-
-			internal FakeRequest(DependencyFinder dependencyFinder, string pathBase)
+			get
 			{
-				this.dependencyFinder = dependencyFinder;
-				this.PathBase = pathBase;
+				return new EnumerableCollection<KeyValuePair<string, string>>(
+					new List<KeyValuePair<string, string>>(0));
 			}
+		}
 
-			public EnumerableCollection<KeyValuePair<string, string>> AllCookies
+		public EnumerableCollection<KeyValuePair<string, string>> AllQueryParameters
+		{
+			get
 			{
-				get
-				{
-					return new EnumerableCollection<KeyValuePair<string, string>>(
-						new List<KeyValuePair<string, string>>(0));
-				}
+				return new EnumerableCollection<KeyValuePair<string, string>>(
+					new List<KeyValuePair<string, string>>(0));
 			}
+		}
 
-			public EnumerableCollection<KeyValuePair<string, FileUpload>> AllFileParameters
+		public Stream Body
+		{
+			get
 			{
-				get
-				{
-					return new EnumerableCollection<KeyValuePair<string, FileUpload>>(
-						new List<KeyValuePair<string, FileUpload>>(0));
-				}
+				return new MemoryStream(Array.Empty<byte>());
 			}
+		}
 
-			public EnumerableCollection<KeyValuePair<string, string>> AllFormParameters
-			{
-				get
-				{
-					return new EnumerableCollection<KeyValuePair<string, string>>(
-						new List<KeyValuePair<string, string>>(0));
-				}
-			}
-
-			public EnumerableCollection<KeyValuePair<string, string>> AllHeaders
-			{
-				get
-				{
-					return new EnumerableCollection<KeyValuePair<string, string>>(
-						new List<KeyValuePair<string, string>>(0));
-				}
-			}
-
-			public EnumerableCollection<KeyValuePair<string, string>> AllQueryParameters
-			{
-				get
-				{
-					return new EnumerableCollection<KeyValuePair<string, string>>(
-						new List<KeyValuePair<string, string>>(0));
-				}
-			}
-
-			public Stream Body
-			{
-				get
-				{
-					return new MemoryStream(Array.Empty<byte>());
-				}
-			}
-
-			public string Host
-			{
-				get
-				{
-					return string.Empty;
-				}
-			}
-
-			public string Method
-			{
-				get
-				{
-					return HttpMethod.Get;
-				}
-			}
-
-			public string Path
-			{
-				get
-				{
-					return "/";
-				}
-			}
-
-			public string PathBase { get; }
-
-			public CancellationToken RequestAborted
-			{
-				get
-				{
-					return CancellationToken.None;
-				}
-			}
-
-			public string Scheme
-			{
-				get
-				{
-					return "https";
-				}
-			}
-
-			public string Cookie(string cookieName)
+		public string Host
+		{
+			get
 			{
 				return string.Empty;
 			}
+		}
 
-			public bool CookieExists(string cookieName)
+		public string Method
+		{
+			get
 			{
-				return false;
+				return HttpMethod.Get;
 			}
+		}
 
-			public T Dependency<T>()
-				where T : notnull
+		public string Path
+		{
+			get
 			{
-				return this.dependencyFinder.Find<T>(this);
+				return "/";
 			}
+		}
 
-			public FileUpload File(string parameterName)
-			{
-				return FileUpload.Unknown;
-			}
+		public string PathBase { get; }
 
-			public bool FileExists(string parameterName)
+		public CancellationToken RequestAborted
+		{
+			get
 			{
-				return false;
+				return CancellationToken.None;
 			}
+		}
 
-			public string Form(string parameterName)
+		public string Scheme
+		{
+			get
 			{
-				return string.Empty;
+				return "https";
 			}
+		}
 
-			public bool FormExists(string parameterName)
-			{
-				return false;
-			}
+		public string Cookie(string cookieName)
+		{
+			return string.Empty;
+		}
 
-			public string Header(string headerName)
-			{
-				return string.Empty;
-			}
+		public bool CookieExists(string cookieName)
+		{
+			return false;
+		}
 
-			public bool HeaderExists(string headerName)
-			{
-				return false;
-			}
+		public T Dependency<T>()
+			where T : notnull
+		{
+			return this.dependencyFinder.Find<T>(this);
+		}
 
-			public string Query(string parameterName)
-			{
-				return string.Empty;
-			}
+		public FileUpload File(string parameterName)
+		{
+			return FileUpload.Unknown;
+		}
 
-			public bool QueryExists(string parameterName)
-			{
-				return false;
-			}
+		public bool FileExists(string parameterName)
+		{
+			return false;
+		}
 
-			public string Route(string parameterName)
-			{
-				return string.Empty;
-			}
+		public string Form(string parameterName)
+		{
+			return string.Empty;
+		}
+
+		public bool FormExists(string parameterName)
+		{
+			return false;
+		}
+
+		public string Header(string headerName)
+		{
+			return string.Empty;
+		}
+
+		public bool HeaderExists(string headerName)
+		{
+			return false;
+		}
+
+		public string Query(string parameterName)
+		{
+			return string.Empty;
+		}
+
+		public bool QueryExists(string parameterName)
+		{
+			return false;
+		}
+
+		public string Route(string parameterName)
+		{
+			return string.Empty;
 		}
 	}
 }

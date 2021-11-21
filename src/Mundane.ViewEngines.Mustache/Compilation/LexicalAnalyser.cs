@@ -3,274 +3,273 @@ using System.IO;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
 
-namespace Mundane.ViewEngines.Mustache.Compilation
-{
-	internal sealed class LexicalAnalyser
-	{
-		private readonly LineCounter lineCounter;
-		private readonly List<string> literals;
-		private readonly StringBuilder stringBuilder;
-		private readonly List<Token> tokens;
+namespace Mundane.ViewEngines.Mustache.Compilation;
 
-		private LexicalAnalyser()
+internal sealed class LexicalAnalyser
+{
+	private readonly LineCounter lineCounter;
+	private readonly List<string> literals;
+	private readonly StringBuilder stringBuilder;
+	private readonly List<Token> tokens;
+
+	private LexicalAnalyser()
+	{
+		this.tokens = new List<Token>();
+		this.literals = new List<string>();
+		this.stringBuilder = new StringBuilder(1024);
+		this.lineCounter = new LineCounter(0, 0);
+	}
+
+	private delegate LexerState LexerState(LexicalAnalyser state, char character);
+
+	internal static (List<Token> Tokens, List<string> Literals) Tokenise(IFileInfo templateFile)
+	{
+		string template;
+
+		using (var resourceStream = templateFile.CreateReadStream()!)
 		{
-			this.tokens = new List<Token>();
-			this.literals = new List<string>();
-			this.stringBuilder = new StringBuilder(1024);
-			this.lineCounter = new LineCounter(0, 0);
+			using (var streamReader = new StreamReader(resourceStream, Encoding.UTF8))
+			{
+				template = streamReader.ReadToEnd();
+			}
 		}
 
-		private delegate LexerState LexerState(LexicalAnalyser state, char character);
+		var state = new LexicalAnalyser();
 
-		internal static (List<Token> Tokens, List<string> Literals) Tokenise(IFileInfo templateFile)
+		var characterOffset = 0;
+
+		LexerState lexerState = LexicalAnalyser.Text;
+
+		while (characterOffset < template.Length)
 		{
-			string template;
+			var character = template[characterOffset++];
 
-			using (var resourceStream = templateFile.CreateReadStream()!)
-			{
-				using (var streamReader = new StreamReader(resourceStream, Encoding.UTF8))
-				{
-					template = streamReader.ReadToEnd();
-				}
-			}
+			lexerState = lexerState.Invoke(state, character);
 
-			var state = new LexicalAnalyser();
+			state.lineCounter.Advance(character);
+		}
 
-			var characterOffset = 0;
+		if (state.stringBuilder.Length > 0)
+		{
+			state.literals.Add(state.stringBuilder.ToString());
+		}
 
-			LexerState lexerState = LexicalAnalyser.Text;
+		state.tokens.Add(new Token(TokenType.End, state.lineCounter));
 
-			while (characterOffset < template.Length)
-			{
-				var character = template[characterOffset++];
+		return (state.tokens, state.literals);
+	}
 
-				lexerState = lexerState.Invoke(state, character);
-
-				state.lineCounter.Advance(character);
-			}
-
+	private static LexerState BraceClose(LexicalAnalyser state, char character)
+	{
+		if (character == '}')
+		{
 			if (state.stringBuilder.Length > 0)
 			{
 				state.literals.Add(state.stringBuilder.ToString());
+				state.stringBuilder.Clear();
 			}
 
-			state.tokens.Add(new Token(TokenType.End, state.lineCounter));
-
-			return (state.tokens, state.literals);
-		}
-
-		private static LexerState BraceClose(LexicalAnalyser state, char character)
-		{
-			if (character == '}')
-			{
-				if (state.stringBuilder.Length > 0)
-				{
-					state.literals.Add(state.stringBuilder.ToString());
-					state.stringBuilder.Clear();
-				}
-
-				state.tokens.Add(new Token(TokenType.CloseTag, state.lineCounter));
-
-				return LexicalAnalyser.Text;
-			}
-
-			state.stringBuilder.Append('}');
-			state.stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		}
-
-		private static LexerState BraceOpen(LexicalAnalyser state, char character)
-		{
-			if (character == '{')
-			{
-				if (state.stringBuilder.Length > 0)
-				{
-					state.literals.Add(state.stringBuilder.ToString());
-					state.stringBuilder.Clear();
-				}
-
-				return LexicalAnalyser.DoubleBraceOpen;
-			}
-
-			if (state.stringBuilder.Length == 0)
-			{
-				state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
-			}
-
-			state.stringBuilder.Append('{');
-			state.stringBuilder.Append(character);
+			state.tokens.Add(new Token(TokenType.CloseTag, state.lineCounter));
 
 			return LexicalAnalyser.Text;
 		}
 
-		private static LexerState Comment(LexicalAnalyser state, char character)
+		state.stringBuilder.Append('}');
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Identifier;
+	}
+
+	private static LexerState BraceOpen(LexicalAnalyser state, char character)
+	{
+		if (character == '{')
 		{
-			if (character == '}')
+			if (state.stringBuilder.Length > 0)
 			{
-				return LexicalAnalyser.CommentBraceClose;
+				state.literals.Add(state.stringBuilder.ToString());
+				state.stringBuilder.Clear();
 			}
 
-			return LexicalAnalyser.Comment;
+			return LexicalAnalyser.DoubleBraceOpen;
 		}
 
-		private static LexerState CommentBraceClose(LexicalAnalyser state, char character)
+		if (state.stringBuilder.Length == 0)
 		{
-			if (character == '}')
-			{
-				return LexicalAnalyser.Text;
-			}
-
-			return LexicalAnalyser.Comment;
+			state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
 		}
 
-		private static LexerState DoubleBraceOpen(LexicalAnalyser state, char character)
+		state.stringBuilder.Append('{');
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Text;
+	}
+
+	private static LexerState Comment(LexicalAnalyser state, char character)
+	{
+		if (character == '}')
 		{
-			if (char.IsWhiteSpace(character))
-			{
-				return LexicalAnalyser.DoubleBraceOpen;
-			}
-
-			if (character == '!')
-			{
-				return LexicalAnalyser.Comment;
-			}
-
-			if (character == '&')
-			{
-				state.tokens.Add(new Token(TokenType.Raw, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '>')
-			{
-				state.tokens.Add(new Token(TokenType.Partial, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '~')
-			{
-				state.tokens.Add(new Token(TokenType.Url, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '#')
-			{
-				state.tokens.Add(new Token(TokenType.OpenBlock, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '^')
-			{
-				state.tokens.Add(new Token(TokenType.InvertedBlock, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '$')
-			{
-				state.tokens.Add(new Token(TokenType.ReplacementBlock, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '<')
-			{
-				state.tokens.Add(new Token(TokenType.LayoutBlock, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '/')
-			{
-				state.tokens.Add(new Token(TokenType.CloseBlock, state.lineCounter));
-
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			state.tokens.Add(new Token(TokenType.OpenTag, state.lineCounter));
-
-			return LexicalAnalyser.IdentifierStart(state, character);
+			return LexicalAnalyser.CommentBraceClose;
 		}
 
-		private static LexerState Identifier(LexicalAnalyser state, char character)
+		return LexicalAnalyser.Comment;
+	}
+
+	private static LexerState CommentBraceClose(LexicalAnalyser state, char character)
+	{
+		if (character == '}')
 		{
-			if (char.IsWhiteSpace(character))
-			{
-				if (state.stringBuilder.Length > 0)
-				{
-					state.literals.Add(state.stringBuilder.ToString());
-					state.stringBuilder.Clear();
-				}
-
-				return LexicalAnalyser.IdentifierEnd;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			state.stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		}
-
-		private static LexerState IdentifierEnd(LexicalAnalyser state, char character)
-		{
-			if (char.IsWhiteSpace(character))
-			{
-				return LexicalAnalyser.IdentifierEnd;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
-			state.stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		}
-
-		private static LexerState IdentifierStart(LexicalAnalyser state, char character)
-		{
-			if (char.IsWhiteSpace(character))
-			{
-				return LexicalAnalyser.IdentifierStart;
-			}
-
-			if (character == '}')
-			{
-				return LexicalAnalyser.BraceClose;
-			}
-
-			state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
-			state.stringBuilder.Append(character);
-
-			return LexicalAnalyser.Identifier;
-		}
-
-		private static LexerState Text(LexicalAnalyser state, char character)
-		{
-			if (character == '{')
-			{
-				return LexicalAnalyser.BraceOpen;
-			}
-
-			if (state.stringBuilder.Length == 0)
-			{
-				state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
-			}
-
-			state.stringBuilder.Append(character);
-
 			return LexicalAnalyser.Text;
 		}
+
+		return LexicalAnalyser.Comment;
+	}
+
+	private static LexerState DoubleBraceOpen(LexicalAnalyser state, char character)
+	{
+		if (char.IsWhiteSpace(character))
+		{
+			return LexicalAnalyser.DoubleBraceOpen;
+		}
+
+		if (character == '!')
+		{
+			return LexicalAnalyser.Comment;
+		}
+
+		if (character == '&')
+		{
+			state.tokens.Add(new Token(TokenType.Raw, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '>')
+		{
+			state.tokens.Add(new Token(TokenType.Partial, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '~')
+		{
+			state.tokens.Add(new Token(TokenType.Url, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '#')
+		{
+			state.tokens.Add(new Token(TokenType.OpenBlock, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '^')
+		{
+			state.tokens.Add(new Token(TokenType.InvertedBlock, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '$')
+		{
+			state.tokens.Add(new Token(TokenType.ReplacementBlock, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '<')
+		{
+			state.tokens.Add(new Token(TokenType.LayoutBlock, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '/')
+		{
+			state.tokens.Add(new Token(TokenType.CloseBlock, state.lineCounter));
+
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		state.tokens.Add(new Token(TokenType.OpenTag, state.lineCounter));
+
+		return LexicalAnalyser.IdentifierStart(state, character);
+	}
+
+	private static LexerState Identifier(LexicalAnalyser state, char character)
+	{
+		if (char.IsWhiteSpace(character))
+		{
+			if (state.stringBuilder.Length > 0)
+			{
+				state.literals.Add(state.stringBuilder.ToString());
+				state.stringBuilder.Clear();
+			}
+
+			return LexicalAnalyser.IdentifierEnd;
+		}
+
+		if (character == '}')
+		{
+			return LexicalAnalyser.BraceClose;
+		}
+
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Identifier;
+	}
+
+	private static LexerState IdentifierEnd(LexicalAnalyser state, char character)
+	{
+		if (char.IsWhiteSpace(character))
+		{
+			return LexicalAnalyser.IdentifierEnd;
+		}
+
+		if (character == '}')
+		{
+			return LexicalAnalyser.BraceClose;
+		}
+
+		state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Identifier;
+	}
+
+	private static LexerState IdentifierStart(LexicalAnalyser state, char character)
+	{
+		if (char.IsWhiteSpace(character))
+		{
+			return LexicalAnalyser.IdentifierStart;
+		}
+
+		if (character == '}')
+		{
+			return LexicalAnalyser.BraceClose;
+		}
+
+		state.tokens.Add(new Token(TokenType.Identifier, state.lineCounter));
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Identifier;
+	}
+
+	private static LexerState Text(LexicalAnalyser state, char character)
+	{
+		if (character == '{')
+		{
+			return LexicalAnalyser.BraceOpen;
+		}
+
+		if (state.stringBuilder.Length == 0)
+		{
+			state.tokens.Add(new Token(TokenType.Text, state.lineCounter));
+		}
+
+		state.stringBuilder.Append(character);
+
+		return LexicalAnalyser.Text;
 	}
 }
