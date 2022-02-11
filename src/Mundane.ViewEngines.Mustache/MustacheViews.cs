@@ -58,8 +58,11 @@ public sealed class MustacheViews
 		}
 	}
 
-	[RequiresUnreferencedCode(MustacheViewEngine.TrimmingWarning)]
-	internal async Task Execute(Stream outputStream, string pathBase, string templatePath, object viewModel)
+	[UnconditionalSuppressMessage(
+		"Trimming",
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+		Justification = "")]
+	internal async ValueTask Execute(Stream outputStream, string pathBase, string templatePath, object viewModel)
 	{
 		if (this.entryPoints.TryGetValue(MustacheViews.NormalisePath(templatePath), out var entryPoint))
 		{

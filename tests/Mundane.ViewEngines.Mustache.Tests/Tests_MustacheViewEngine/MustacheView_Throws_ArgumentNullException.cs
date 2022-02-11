@@ -15,7 +15,7 @@ public static class MustacheView_Throws_ArgumentNullException
 		var dependencies = new Dependencies(new Dependency<MustacheViews>(new MustacheViews(new NullFileProvider())));
 
 		var responseStreamNoModel = await Assert.ThrowsAnyAsync<ArgumentNullException>(
-			async () => await Helper.Run(dependencies, o => o.MustacheView(null!, "Index.html")));
+			async () => await Helper.Run(dependencies, o => o.MustacheView((MustacheViews)null!, "Index.html")));
 
 		Assert.Equal("mustacheViews", responseStreamNoModel.ParamName!);
 

@@ -11,6 +11,8 @@ namespace Mundane.ViewEngines.Mustache.Engine;
 
 internal readonly struct ViewProgram
 {
+	private const string RequiresUnreferencedCodeMessage = "Requires Unreferenced Code";
+
 	private const BindingFlags ValueFlags =
 		BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
@@ -31,7 +33,7 @@ internal readonly struct ViewProgram
 		this.replacements = replacements;
 	}
 
-	[RequiresUnreferencedCode(MustacheViewEngine.TrimmingWarning)]
+	[RequiresUnreferencedCode(ViewProgram.RequiresUnreferencedCodeMessage)]
 	internal async ValueTask Execute(
 		Stream outputStream,
 		UrlResolver urlResolver,
@@ -258,7 +260,7 @@ internal readonly struct ViewProgram
 		return false;
 	}
 
-	[RequiresUnreferencedCode(MustacheViewEngine.TrimmingWarning)]
+	[RequiresUnreferencedCode(ViewProgram.RequiresUnreferencedCodeMessage)]
 	private static (bool ValueFound, object? ValueObject) GetObjectValue(object? valueObject, string[] identifiers)
 	{
 		foreach (var identifier in identifiers)
@@ -290,7 +292,7 @@ internal readonly struct ViewProgram
 
 				var property = type.GetProperty(identifier, ViewProgram.ValueFlags);
 
-				if (property != null)
+				if (property != null && property.CanRead)
 				{
 					valueObject = property.GetValue(valueObject, null);
 				}
@@ -313,7 +315,7 @@ internal readonly struct ViewProgram
 		return (true, valueObject);
 	}
 
-	[RequiresUnreferencedCode(MustacheViewEngine.TrimmingWarning)]
+	[RequiresUnreferencedCode(ViewProgram.RequiresUnreferencedCodeMessage)]
 	private static object? GetValue(Stack<object?> objectStack, string[] identifiers)
 	{
 		foreach (var topofStack in objectStack)

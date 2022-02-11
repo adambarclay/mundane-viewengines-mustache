@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -9,6 +10,21 @@ namespace Mundane.ViewEngines.Mustache.Tests.Tests_MustacheViewEngine;
 [ExcludeFromCodeCoverage]
 public static class MustacheView_Throws_ViewModelPropertyNotFound
 {
+	[Theory]
+	[ClassData(typeof(MustacheViewWithModelTheoryData))]
+	public static async Task When_The_Get_Method_For_An_Object_Property_Is_Missing(MustacheViewWithModel entryPoint)
+	{
+		var views = new MustacheViews(
+			new ManifestEmbeddedFileProvider(typeof(Helper).Assembly, "/Templates/SimpleSubstitutions/Single"));
+
+		var viewModel = new MissingGetterViewModel { Title = "Title" };
+
+		var exception = await Assert.ThrowsAnyAsync<ViewModelPropertyNotFound>(
+			async () => await entryPoint(views, "Single.html", viewModel));
+
+		Assert.Equal("Property \"Title\" was not found.", exception.Message);
+	}
+
 	[Theory]
 	[ClassData(typeof(MustacheViewWithModelTheoryData))]
 	public static async Task When_The_View_Model_Dictionary_Does_Not_Contain_The_Template_Property(
@@ -73,5 +89,25 @@ public static class MustacheView_Throws_ViewModelPropertyNotFound
 			async () => await entryPoint(views, "Single.html"));
 
 		Assert.Equal("Property \"Title\" was not found.", exception.Message);
+	}
+
+	[Serializable]
+	private sealed class MissingGetterViewModel
+	{
+		internal NestedObject Nested { get; } = new NestedObject();
+
+		internal string Title
+		{
+			set
+			{
+				this.Nested.Value = value;
+			}
+		}
+
+		[Serializable]
+		internal sealed class NestedObject
+		{
+			internal string Value { get; set; } = string.Empty;
+		}
 	}
 }
