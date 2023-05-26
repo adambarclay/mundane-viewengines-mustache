@@ -27,7 +27,7 @@ public sealed class MustacheViews
 
 	/// <summary>Initializes a new instance of the <see cref="MustacheViews"/> class.</summary>
 	/// <param name="viewFileProvider">The view template file provider.</param>
-	/// <param name="urlResolver">Resolves URLs when specified in URL tags e.g. {{~ /some-url }}.</param>
+	/// <param name="urlResolver">Resolves URLs when specified in URL tags e.g. {{~ /some-url }}, defaults to (pathBase, url) => pathBase + url.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="viewFileProvider"/> is <see langword="null"/>.</exception>
 	/// <exception cref="MustacheCompilerError">An error is discovered during view compilation.</exception>
 	public MustacheViews(IFileProvider viewFileProvider, UrlResolver urlResolver)

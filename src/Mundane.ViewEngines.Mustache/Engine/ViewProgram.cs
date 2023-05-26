@@ -45,7 +45,7 @@ internal readonly struct ViewProgram
 		var stackCounter = 0;
 
 		var objectStack = new Stack<object?>();
-		var enumeratorStack = new Stack<IEnumerator>();
+		var enumeratorStack = new Stack<IEnumerator?>();
 		var replacementsStack = new Stack<Replacement[]>();
 
 		programStack[stackCounter] = entryPoint;
@@ -106,12 +106,15 @@ internal readonly struct ViewProgram
 
 						programStack[stackCounter] = instruction.Parameter;
 					}
-					else if (enumerator != null)
+					else
 					{
 						enumeratorStack.Push(enumerator);
 
-						objectStack.Pop();
-						objectStack.Push(enumerator.Current);
+						if (enumerator is not null)
+						{
+							objectStack.Pop();
+							objectStack.Push(enumerator.Current);
+						}
 					}
 
 					break;
@@ -135,7 +138,7 @@ internal readonly struct ViewProgram
 
 					if (enumeratorStack.TryPeek(out var enumerator))
 					{
-						if (enumerator.MoveNext())
+						if (enumerator is not null && enumerator.MoveNext())
 						{
 							objectStack.Push(enumerator.Current);
 
